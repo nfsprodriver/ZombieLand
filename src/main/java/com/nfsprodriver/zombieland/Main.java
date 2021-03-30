@@ -9,6 +9,8 @@ import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 public class Main extends JavaPlugin {
@@ -20,9 +22,12 @@ public class Main extends JavaPlugin {
         getCommand("zlsign").setExecutor(new CreateSign(this));
 
         Location spawnLoc = getServer().getWorld("world").getSpawnLocation();
-        Area area = new Area(spawnLoc, getConfig().getDouble("zlarea.x1"), getConfig().getDouble("zlarea.x2"), getConfig().getDouble("zlarea.z1"), getConfig().getDouble("zlarea.z2"));
-        ZombieLand game = new ZombieLand(this, area, Bukkit.getScheduler());
-        game.init();
+        List<Map<?, ?>> zlareas = getConfig().getMapList("zlareas");
+        zlareas.forEach((zlarea) -> {
+            Area area = new Area(spawnLoc, (double) zlarea.get("x1"), (double) zlarea.get("x2"), (double) zlarea.get("z1"), (double) zlarea.get("z2"));
+            ZombieLand game = new ZombieLand(this, area, Bukkit.getScheduler());
+            game.init();
+        });
         getLogger().info("ZombieLand enabled!");
     }
 
