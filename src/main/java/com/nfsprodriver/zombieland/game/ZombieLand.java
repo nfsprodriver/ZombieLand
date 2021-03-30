@@ -11,7 +11,9 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class ZombieLand {
@@ -19,7 +21,7 @@ public class ZombieLand {
     private final Area area;
     private final BukkitScheduler scheduler;
     private final ScoreboardManager scoreboardManager;
-    private List<Player> playersInGame;
+    private List<Player> playersInGame = Collections.emptyList();
     public List<Scoreboard> scoreboardList;
     public Integer timer = 0;
     public Integer level = 0;
