@@ -25,21 +25,24 @@ public class CreateSign implements CommandExecutor {
             assert player != null;
             Block block = player.getTargetBlockExact(10);
             String type = args[0];
+            String area = args[1];
             if (block != null && block.getType() == Material.OAK_SIGN && (type.equals("zl") || type.equals("spawn"))) {
                 MetadataValue signType = new FixedMetadataValue(plugin, type);
                 block.setMetadata("signType", signType);
                 Sign sign = (Sign) block.getState();
                 if (type.equals("zl")) {
-                    sign.setLine(0, "ZombieLand");
+                    MetadataValue zlArea = new FixedMetadataValue(plugin, area);
+                    block.setMetadata("zlArea", zlArea);
+                    sign.setLine(0, "ZombieLand " + area);
                 } else if(type.equals("spawn")) {
                     sign.setLine(0, "Spawn");
                 }
                 sign.update();
+
+                return true;
             } else {
                 player.sendMessage("Please look at an oak sign and parse either zl or spawn as arg!");
             }
-
-            return true;
         }
 
         return false;

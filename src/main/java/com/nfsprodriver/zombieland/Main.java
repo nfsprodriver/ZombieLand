@@ -2,7 +2,10 @@ package com.nfsprodriver.zombieland;
 
 import com.nfsprodriver.zombieland.abstracts.Area;
 import com.nfsprodriver.zombieland.commands.CreateSign;
+import com.nfsprodriver.zombieland.commands.SetTeam;
+import com.nfsprodriver.zombieland.events.PlayerDead;
 import com.nfsprodriver.zombieland.events.SignPress;
+import com.nfsprodriver.zombieland.events.WorldLoaded;
 import com.nfsprodriver.zombieland.game.ZombieLand;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -18,16 +21,12 @@ public class Main extends JavaPlugin {
     @Override
     public void onEnable() {
         super.onEnable();
+        saveDefaultConfig();
+        getServer().getPluginManager().registerEvents(new WorldLoaded(this), this);
         getServer().getPluginManager().registerEvents(new SignPress(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerDead(this), this);
         getCommand("zlsign").setExecutor(new CreateSign(this));
-
-        Location spawnLoc = getServer().getWorld("world").getSpawnLocation();
-        List<Map<?, ?>> zlareas = getConfig().getMapList("zlareas");
-        zlareas.forEach((zlarea) -> {
-            Area area = new Area(spawnLoc, (double) zlarea.get("x1"), (double) zlarea.get("x2"), (double) zlarea.get("z1"), (double) zlarea.get("z2"));
-            ZombieLand game = new ZombieLand(this, area, Bukkit.getScheduler());
-            game.init();
-        });
+        getCommand("zlsetteam").setExecutor(new SetTeam(this));
         getLogger().info("ZombieLand enabled!");
     }
 

@@ -16,5 +16,8 @@ load: STARTUP
 commands:
   zlsign:
     description: Create ZombieLand sign
-    usage: /zlsign
+    usage: /zlsign zl/spawn [areaname]
+  zlsetteam:
+    description: Set team of player
+    usage: /zlsetteam player team
 

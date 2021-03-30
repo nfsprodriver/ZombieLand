@@ -22,6 +22,7 @@ public class ZombieLand {
     private List<Player> playersInGame;
     public List<Scoreboard> scoreboardList;
     public Integer timer = 0;
+    public Integer level = 0;
 
     public ZombieLand(JavaPlugin plugin, Area area, BukkitScheduler scheduler) {
         this.plugin = plugin;
@@ -45,11 +46,12 @@ public class ZombieLand {
                 if (playersInGame.size() > 0) {
                     timer++;
                     if (timer % plugin.getConfig().getInt("zlrules.levelDuration") == 0) {
-                        //New wave
+                        level++;
                     }
                 } else {
-                    //Remove all LivingEntities in area
                     timer = 0;
+                    level = 0;
+                    //Remove all LivingEntities in area
                 }
             }
         }, 20L, 20L);
