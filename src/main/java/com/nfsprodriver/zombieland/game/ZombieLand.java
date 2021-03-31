@@ -94,6 +94,7 @@ public class ZombieLand {
     }
 
     private void stopGame() {
+        pauseTimer = 0;
         timer = 0;
         level = 0;
         getRemainingZombies().forEach(Entity::remove);
@@ -125,6 +126,9 @@ public class ZombieLand {
             Set<Team> teams = scoreboard.getTeams();
             Team playerTeam = teams.stream().filter(team -> team.getName().equals(finalTeamName)).collect(Collectors.toList()).get(0);
             playerTeam.addPlayer(player);
+            playerTeam.setDisplayName(teamName);
+            Score score = scoreboard.getObjective("kills").getScore(player);
+            score.setScore(0);
             player.setScoreboard(scoreboard);
         }
     }
