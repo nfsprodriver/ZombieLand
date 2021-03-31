@@ -4,7 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 
 public class General {
-    private FileConfiguration config;
+    private final FileConfiguration config;
 
     public General(FileConfiguration config) {
         this.config = config;

@@ -17,9 +17,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.logging.Logger;
 
 public class SignPress implements Listener {
-    private JavaPlugin plugin;
+    private final JavaPlugin plugin;
     private Logger logger;
-    private FileConfiguration config;
+    private final FileConfiguration config;
 
     public SignPress(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -55,7 +55,7 @@ public class SignPress implements Listener {
             return player.getMetadata("zlLives" + area).get(0).asInt() > 0;
         } else {
             MetadataValue areaLives = new FixedMetadataValue(plugin, config.getInt("zlrules.playerLives"));
-            player.setMetadata("zlLives." + area, areaLives);
+            player.setMetadata("zlLives" + area, areaLives);
             return true;
         }
     }

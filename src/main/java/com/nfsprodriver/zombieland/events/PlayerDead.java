@@ -25,9 +25,9 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 public class PlayerDead implements Listener {
-    private JavaPlugin plugin;
+    private final JavaPlugin plugin;
     private Logger logger;
-    private FileConfiguration config;
+    private final FileConfiguration config;
 
     public PlayerDead(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -53,8 +53,8 @@ public class PlayerDead implements Listener {
                     }
                     MetadataValue newAreaLives = new FixedMetadataValue(plugin, areaLives);
                     player.setMetadata("zlLives" + area, newAreaLives);
-                    Location loc = new General(config).goToSpawnEntry(playerLoc);
-                    player.teleport(loc);
+                    /*Location loc = new General(config).goToSpawnEntry(playerLoc);
+                    player.teleport(loc);*/
                 }
             }
         });

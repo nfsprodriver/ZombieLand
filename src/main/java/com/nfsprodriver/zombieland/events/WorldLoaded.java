@@ -18,9 +18,9 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 public class WorldLoaded implements Listener {
-    private JavaPlugin plugin;
+    private final JavaPlugin plugin;
     private Logger logger;
-    private FileConfiguration config;
+    private final FileConfiguration config;
 
     public WorldLoaded(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -40,7 +40,7 @@ public class WorldLoaded implements Listener {
                 ConfigurationSection zlarea = zlareas.getConfigurationSection(zlareasKey);
                 assert zlarea != null;
                 Area area = new Area(spawnLoc, (double) zlarea.get("x1"), (double) zlarea.get("x2"), (double) zlarea.get("z1"), (double) zlarea.get("z2"));
-                ZombieLand game = new ZombieLand(plugin, area, Bukkit.getScheduler());
+                ZombieLand game = new ZombieLand(plugin, area, Bukkit.getScheduler(), zlareasKey);
                 game.init();
             });
         }

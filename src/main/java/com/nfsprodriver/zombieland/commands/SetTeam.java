@@ -9,7 +9,7 @@ import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class SetTeam implements CommandExecutor {
-    private JavaPlugin plugin;
+    private final JavaPlugin plugin;
 
     public SetTeam(JavaPlugin plugin) {
         this.plugin = plugin;

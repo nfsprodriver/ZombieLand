@@ -17,3 +17,9 @@ zlareas:
 zlrules:
   levelDuration: 60
   playerLives: 3
+
+teams:
+  red
+  green
+  blue
+  yellow

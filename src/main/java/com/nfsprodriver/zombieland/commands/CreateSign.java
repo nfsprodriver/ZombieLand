@@ -12,7 +12,7 @@ import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class CreateSign implements CommandExecutor {
-    private JavaPlugin plugin;
+    private final JavaPlugin plugin;
 
     public CreateSign(JavaPlugin plugin) {
         this.plugin = plugin;

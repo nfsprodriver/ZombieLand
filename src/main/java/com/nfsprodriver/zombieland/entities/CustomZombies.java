@@ -6,7 +6,7 @@ import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 
 public class CustomZombies {
-    private Zombie zombie;
+    private final Zombie zombie;
 
     public CustomZombies(Zombie zombie) {
         this.zombie = zombie;
