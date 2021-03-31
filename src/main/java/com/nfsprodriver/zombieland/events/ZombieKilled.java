@@ -21,7 +21,7 @@ public class ZombieKilled implements Listener {
             if (event.getEntity().getKiller() != null) {
                 String gameName = event.getEntity().getMetadata("gameName").get(0).asString();
                 Player player = event.getEntity().getKiller();
-                Score score = player.getScoreboard().getObjective("kills" + gameName).getScore(player);
+                Score score = player.getScoreboard().getObjective("zombieland" + gameName).getScore(player.getName() + " kills");
                 score.setScore(score.getScore() + 1);
             }
         }

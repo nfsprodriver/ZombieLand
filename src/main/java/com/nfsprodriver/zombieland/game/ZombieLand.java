@@ -3,7 +3,6 @@ package com.nfsprodriver.zombieland.game;
 import com.nfsprodriver.zombieland.abstracts.Area;
 import com.nfsprodriver.zombieland.entities.CustomZombie;
 import org.bukkit.Location;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.*;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -45,14 +44,14 @@ public class ZombieLand {
             Collection<? extends Player> onlinePlayers = plugin.getServer().getOnlinePlayers();
             onlinePlayers.forEach(player -> {
                 if (playerIsInGame(player)) {
-                    plugin.getLogger().info(player.getName());
                     playersInGame.add(player);
                     playerScoreboard(player);
+                    Score score = scoreboard.getObjective("zombieland" + name).getScore("Timer");
+                    score.setScore(timer);
                 }
             });
             if (playersInGame.size() > 0) {
                 timer++;
-                plugin.getLogger().info(timer.toString());
                 if (getRemainingZombies().size() == 0) {
                     pauseTimer++;
                     if (pauseTimer == plugin.getConfig().getInt("zlrules.pauseTime")) {
@@ -66,30 +65,33 @@ public class ZombieLand {
     }
 
     private boolean playerIsInGame(Player player) {
-        Location playerLoc = player.getLocation();
-        if ((playerLoc.getX() > area.loc1.getX() && playerLoc.getX() < area.loc2.getX() && playerLoc.getZ() > area.loc1.getZ() && playerLoc.getZ() < area.loc2.getZ())) {
-            int areaLives = config.getInt("zlrules.playerLives");
-            if (player.getMetadata("zlLives" + area).size() > 0) {
-                areaLives = player.getMetadata("zlLives" + area).get(0).asInt();
-                if (areaLives == 0) {
-                    return false;
-                }
+        int areaLives = config.getInt("zlrules.playerLives");
+        if (player.getMetadata("zlLives" + name).size() > 0) {
+            areaLives = player.getMetadata("zlLives" + name).get(0).asInt();
+            if (areaLives == 0) {
+                return false;
             }
-            MetadataValue newAreaLives = new FixedMetadataValue(plugin, areaLives);
-            player.setMetadata("zlLives" + area, newAreaLives);
             return true;
+        } else {
+            Location playerLoc = player.getLocation();
+            if ((playerLoc.getX() > area.loc1.getX() && playerLoc.getX() < area.loc2.getX() && playerLoc.getZ() > area.loc1.getZ() && playerLoc.getZ() < area.loc2.getZ())) {
+                MetadataValue newAreaLives = new FixedMetadataValue(plugin, areaLives);
+                player.setMetadata("zlLives" + name, newAreaLives);
+                return true;
+            }
         }
         return false;
     }
 
     private Location getRandomLocation() {
-        ConfigurationSection entry = config.getConfigurationSection("zlareas."+name+".entry");
-        Location randomLocation = area.loc1;
-        assert entry != null;
-        randomLocation.setX(entry.getDouble("x"));
-        randomLocation.setY(entry.getDouble("y"));
-        randomLocation.setZ(entry.getDouble("z"));
-        //TODO
+        Location randomLocation = area.loc1.clone();
+        Random rand = new Random();
+        int x = rand.nextInt((int) area.loc2.getX() - (int) area.loc1.getX() + 1) + (int) area.loc1.getX();
+        int z = rand.nextInt((int) area.loc2.getZ() - (int) area.loc1.getZ() + 1) + (int) area.loc1.getZ();
+        int y = randomLocation.getWorld().getHighestBlockAt(x, z).getY() + 1;
+        randomLocation.setX(x);
+        randomLocation.setY(y);
+        randomLocation.setZ(z);
 
         return randomLocation;
     }
@@ -112,9 +114,9 @@ public class ZombieLand {
         timer = 0;
         level = 0;
         getRemainingZombies().forEach(Entity::remove);
-        plugin.getServer().getOnlinePlayers().forEach(player -> {
+        /*plugin.getServer().getOnlinePlayers().forEach(player -> { TODO
             player.setScoreboard(scoreboardManager.getNewScoreboard());
-        });
+        });*/
     }
 
     private void generateScoreboard() {
@@ -123,10 +125,9 @@ public class ZombieLand {
         teamNames.forEach(teamName -> {
             scoreboard.registerNewTeam(teamName);
         });
-        Objective objective = scoreboard.registerNewObjective("kills" + name, "dummy", "Kills " + name);
+        Objective objective = scoreboard.registerNewObjective("zombieland" + name, "dummy", "ZombieLand " + name);
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
         objective.setDisplayName("ZombieLand " + name);
-        //TODO
     }
 
     private void playerScoreboard(Player player) {
@@ -141,14 +142,16 @@ public class ZombieLand {
             Team playerTeam = teams.stream().filter(team -> team.getName().equals(finalTeamName)).collect(Collectors.toList()).get(0);
             playerTeam.addPlayer(player);
             playerTeam.setDisplayName(teamName);
-            Score score = scoreboard.getObjective("kills" + name).getScore(player);
-            score.setScore(0);
+            Score score = scoreboard.getObjective("zombieland" + name).getScore("Timer");
+            score.setScore(timer);
+            Score score1 = scoreboard.getObjective("zombieland" + name).getScore(player.getName() + " kills");
+            score1.setScore(0);
             player.setScoreboard(scoreboard);
         }
     }
 
     private Collection<Entity> getRemainingZombies() {
-        BoundingBox boundingBox = new BoundingBox(area.loc1.getX(), area.loc1.getY(), area.loc1.getZ(), area.loc2.getX(), area.loc2.getY(), area.loc2.getZ());
-        return area.loc1.getWorld().getNearbyEntities(boundingBox, (entity -> entity.getType() == EntityType.ZOMBIE));
+        BoundingBox boundingBox = new BoundingBox(area.loc1.getX(), 0.0, area.loc1.getZ(), area.loc2.getX(), 256.0, area.loc2.getZ());
+        return area.loc1.getWorld().getNearbyEntities(boundingBox, (entity -> (entity.getType() == EntityType.ZOMBIE && entity.getMetadata("gameName").size() > 0)));
     }
 }

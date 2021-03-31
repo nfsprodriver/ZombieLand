@@ -27,7 +27,9 @@ public class CustomZombie {
         ItemStack helmet = new ItemStack(Material.IRON_HELMET);
         ItemStack mainHand = new ItemStack(Material.IRON_SWORD);
         equipment.setHelmet(helmet);
+        equipment.setHelmetDropChance(0.0F);
         equipment.setItemInMainHand(mainHand);
+        equipment.setItemInMainHandDropChance(0.2F);
 
         return zombie;
     }
