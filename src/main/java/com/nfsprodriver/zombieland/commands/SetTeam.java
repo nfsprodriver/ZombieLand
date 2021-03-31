@@ -8,6 +8,8 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Set;
+
 public class SetTeam implements CommandExecutor {
     private final JavaPlugin plugin;
 
@@ -22,6 +24,10 @@ public class SetTeam implements CommandExecutor {
         if (!(playerName.isEmpty()) && !(teamName.isEmpty())) {
             Player player = plugin.getServer().getPlayer(playerName);
             assert player != null;
+            Set<String> teamNames = plugin.getConfig().getConfigurationSection("teams").getKeys(false);
+            if ((!teamNames.contains(teamName))) {
+                sender.sendMessage("Parse a valid team name!");
+            }
             MetadataValue team = new FixedMetadataValue(plugin, teamName);
             player.setMetadata("team", team);
 

@@ -19,7 +19,7 @@ zlrules:
   playerLives: 3
 
 teams:
-  red
-  green
-  blue
-  yellow
+  red: red
+  green: green
+  blue: blue
+  yellow: yellow

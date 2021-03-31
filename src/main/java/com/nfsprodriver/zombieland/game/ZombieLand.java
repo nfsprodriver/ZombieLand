@@ -20,8 +20,7 @@ public class ZombieLand {
     private final BukkitScheduler scheduler;
     private final ScoreboardManager scoreboardManager;
     private final FileConfiguration config;
-    private List<Player> playersInGame = Collections.emptyList();
-    private List<Team> teams = Collections.emptyList();
+    private List<Player> playersInGame = new ArrayList<>();
     public Scoreboard scoreboard;
     public String name;
     public Integer pauseTimer = 0;
@@ -44,12 +43,14 @@ public class ZombieLand {
             Collection<? extends Player> onlinePlayers = plugin.getServer().getOnlinePlayers();
             onlinePlayers.forEach(player -> {
                 if (playerIsInGame(player)) {
+                    plugin.getLogger().info(player.getName());
                     playersInGame.add(player);
                     playerScoreboard(player);
                 }
             });
             if (playersInGame.size() > 0) {
                 timer++;
+                plugin.getLogger().info(timer.toString());
                 if (getRemainingZombies().size() == 0) {
                     pauseTimer++;
                     if (pauseTimer == plugin.getConfig().getInt("zlrules.pauseTime")) {
@@ -62,7 +63,7 @@ public class ZombieLand {
         }, 20L, 20L);
     }
 
-    private Boolean playerIsInGame(Player player) {
+    private boolean playerIsInGame(Player player) {
         Location playerLoc = player.getLocation();
         return (playerLoc.getX() > area.loc1.getX() && playerLoc.getX() < area.loc2.getX() && playerLoc.getZ() > area.loc1.getZ() && playerLoc.getZ() < area.loc2.getZ());
     }
@@ -85,7 +86,7 @@ public class ZombieLand {
         playersInGame.forEach(player -> {
             player.sendTitle("Level " + level, "", 20, 100, 20);
         });
-        for (int i = 0; i <= level; i++) {
+        for (int i = 0; i < level; i++) {
             Location spawnLoc = getRandomLocation();
             Zombie zombie = (Zombie) spawnLoc.getWorld().spawnEntity(spawnLoc, EntityType.ZOMBIE);
             new CustomZombie(zombie).createZombie1();
@@ -105,8 +106,7 @@ public class ZombieLand {
         scoreboard = scoreboardManager.getNewScoreboard();
         Set<String> teamNames = config.getConfigurationSection("teams").getKeys(false);
         teamNames.forEach(teamName -> {
-            Team team = scoreboard.registerNewTeam(teamName);
-            teams.add(team);
+            scoreboard.registerNewTeam(teamName);
         });
         Objective objective = scoreboard.registerNewObjective("kills", "dummy", "Kills");
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
@@ -122,6 +122,7 @@ public class ZombieLand {
                 teamName = player.getMetadata("team").get(0).asString();
             }
             String finalTeamName = teamName;
+            Set<Team> teams = scoreboard.getTeams();
             Team playerTeam = teams.stream().filter(team -> team.getName().equals(finalTeamName)).collect(Collectors.toList()).get(0);
             playerTeam.addPlayer(player);
             player.setScoreboard(scoreboard);

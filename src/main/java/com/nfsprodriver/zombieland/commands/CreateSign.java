@@ -24,8 +24,14 @@ public class CreateSign implements CommandExecutor {
             Player player = ((Player) sender).getPlayer();
             assert player != null;
             Block block = player.getTargetBlockExact(10);
+            if (args.length == 0) {
+                return false;
+            }
             String type = args[0];
-            String area = args[1];
+            String area = "";
+            if (args.length == 2) {
+                area = args[1];
+            }
             if (block != null && block.getType() == Material.OAK_SIGN && (type.equals("zl") || type.equals("spawn"))) {
                 MetadataValue signType = new FixedMetadataValue(plugin, type);
                 block.setMetadata("signType", signType);
