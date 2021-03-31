@@ -103,7 +103,7 @@ public class ZombieLand {
         for (int i = 0; i < level; i++) {
             Location spawnLoc = getRandomLocation();
             Zombie zombie = (Zombie) spawnLoc.getWorld().spawnEntity(spawnLoc, EntityType.ZOMBIE);
-            new CustomZombie(zombie).createZombie1();
+            new CustomZombie(zombie, name, plugin).createZombie1();
         }
     }
 
@@ -123,9 +123,9 @@ public class ZombieLand {
         teamNames.forEach(teamName -> {
             scoreboard.registerNewTeam(teamName);
         });
-        Objective objective = scoreboard.registerNewObjective("kills", "dummy", "Kills");
+        Objective objective = scoreboard.registerNewObjective("kills" + name, "dummy", "Kills " + name);
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-        objective.setDisplayName("ZombieLand");
+        objective.setDisplayName("ZombieLand " + name);
         //TODO
     }
 
@@ -141,7 +141,7 @@ public class ZombieLand {
             Team playerTeam = teams.stream().filter(team -> team.getName().equals(finalTeamName)).collect(Collectors.toList()).get(0);
             playerTeam.addPlayer(player);
             playerTeam.setDisplayName(teamName);
-            Score score = scoreboard.getObjective("kills").getScore(player);
+            Score score = scoreboard.getObjective("kills" + name).getScore(player);
             score.setScore(0);
             player.setScoreboard(scoreboard);
         }
