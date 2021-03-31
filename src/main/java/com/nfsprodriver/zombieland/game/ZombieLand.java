@@ -8,9 +8,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.ScoreboardManager;
-import org.bukkit.scoreboard.Team;
+import org.bukkit.scoreboard.*;
+import org.bukkit.util.BoundingBox;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -25,6 +24,7 @@ public class ZombieLand {
     private List<Team> teams = Collections.emptyList();
     public Scoreboard scoreboard;
     public String name;
+    public Integer pauseTimer = 0;
     public Integer timer = 0;
     public Integer level = 0;
 
@@ -50,8 +50,11 @@ public class ZombieLand {
             });
             if (playersInGame.size() > 0) {
                 timer++;
-                if (timer % plugin.getConfig().getInt("zlrules.levelDuration") == 0) {
-                    nextLevel();
+                if (getRemainingZombies().size() == 0) {
+                    pauseTimer++;
+                    if (pauseTimer == plugin.getConfig().getInt("zlrules.pauseTime")) {
+                        nextLevel();
+                    }
                 }
             } else {
                 stopGame();
@@ -77,6 +80,7 @@ public class ZombieLand {
     }
 
     private void nextLevel() {
+        pauseTimer = 0;
         level++;
         playersInGame.forEach(player -> {
             player.sendTitle("Level " + level, "", 20, 100, 20);
@@ -91,18 +95,9 @@ public class ZombieLand {
     private void stopGame() {
         timer = 0;
         level = 0;
-        //Remove all LivingEntities in area
-        double v = area.loc2.getX() - area.loc1.getX();
-        double v1 = area.loc2.getY() - area.loc1.getY(); //TODO
-        double v2 = area.loc2.getZ() - area.loc1.getZ();
-        Collection<Entity> entities = area.loc1.getWorld().getNearbyEntities(area.loc1, v, v1, v2);
-        entities.forEach(entity -> {
-            if (entity instanceof Zombie) {
-                entity.remove();
-            }
-        });
+        getRemainingZombies().forEach(Entity::remove);
         plugin.getServer().getOnlinePlayers().forEach(player -> {
-            //player.setScoreboard(null);
+            player.setScoreboard(scoreboardManager.getNewScoreboard());
         });
     }
 
@@ -113,6 +108,9 @@ public class ZombieLand {
             Team team = scoreboard.registerNewTeam(teamName);
             teams.add(team);
         });
+        Objective objective = scoreboard.registerNewObjective("kills", "dummy", "Kills");
+        objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+        objective.setDisplayName("ZombieLand");
         //TODO
     }
 
@@ -128,5 +126,10 @@ public class ZombieLand {
             playerTeam.addPlayer(player);
             player.setScoreboard(scoreboard);
         }
+    }
+
+    private Collection<Entity> getRemainingZombies() {
+        BoundingBox boundingBox = new BoundingBox(area.loc1.getX(), area.loc1.getY(), area.loc1.getZ(), area.loc2.getX(), area.loc2.getY(), area.loc2.getZ());
+        return area.loc1.getWorld().getNearbyEntities(boundingBox, (entity -> entity.getType() == EntityType.ZOMBIE));
     }
 }

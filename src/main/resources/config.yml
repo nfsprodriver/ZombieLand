@@ -15,7 +15,7 @@ zlareas:
       z: 100.0
 
 zlrules:
-  levelDuration: 60
+  pauseTime: 30
   playerLives: 3
 
 teams:
