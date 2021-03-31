@@ -1,19 +1,12 @@
 package com.nfsprodriver.zombieland;
 
-import com.nfsprodriver.zombieland.abstracts.Area;
 import com.nfsprodriver.zombieland.commands.CreateSign;
 import com.nfsprodriver.zombieland.commands.SetTeam;
 import com.nfsprodriver.zombieland.events.PlayerDead;
 import com.nfsprodriver.zombieland.events.SignPress;
 import com.nfsprodriver.zombieland.events.WorldLoaded;
-import com.nfsprodriver.zombieland.game.ZombieLand;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 public class Main extends JavaPlugin {

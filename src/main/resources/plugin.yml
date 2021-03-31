@@ -1,8 +1,3 @@
-###################################
-### Sample plugin by CacTt4ck   ###
-### https://github.com/CacTt4ck ###
-###################################
-
 api-version: 1.16
 name: ZombieLand
 main: com.nfsprodriver.zombieland.Main
