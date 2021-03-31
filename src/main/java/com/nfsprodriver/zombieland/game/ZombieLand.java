@@ -6,6 +6,8 @@ import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.*;
+import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scoreboard.*;
@@ -65,7 +67,19 @@ public class ZombieLand {
 
     private boolean playerIsInGame(Player player) {
         Location playerLoc = player.getLocation();
-        return (playerLoc.getX() > area.loc1.getX() && playerLoc.getX() < area.loc2.getX() && playerLoc.getZ() > area.loc1.getZ() && playerLoc.getZ() < area.loc2.getZ());
+        if ((playerLoc.getX() > area.loc1.getX() && playerLoc.getX() < area.loc2.getX() && playerLoc.getZ() > area.loc1.getZ() && playerLoc.getZ() < area.loc2.getZ())) {
+            int areaLives = config.getInt("zlrules.playerLives");
+            if (player.getMetadata("zlLives" + area).size() > 0) {
+                areaLives = player.getMetadata("zlLives" + area).get(0).asInt();
+                if (areaLives == 0) {
+                    return false;
+                }
+            }
+            MetadataValue newAreaLives = new FixedMetadataValue(plugin, areaLives);
+            player.setMetadata("zlLives" + area, newAreaLives);
+            return true;
+        }
+        return false;
     }
 
     private Location getRandomLocation() {
