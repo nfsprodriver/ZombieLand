@@ -5,10 +5,10 @@ import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 
-public class CustomZombies {
+public class CustomZombie {
     private final Zombie zombie;
 
-    public CustomZombies(Zombie zombie) {
+    public CustomZombie(Zombie zombie) {
         this.zombie = zombie;
     }
 

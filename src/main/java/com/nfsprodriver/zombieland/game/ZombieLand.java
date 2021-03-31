@@ -1,7 +1,7 @@
 package com.nfsprodriver.zombieland.game;
 
 import com.nfsprodriver.zombieland.abstracts.Area;
-import com.nfsprodriver.zombieland.entities.CustomZombies;
+import com.nfsprodriver.zombieland.entities.CustomZombie;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -88,7 +88,7 @@ public class ZombieLand {
         for (int i = 0; i <= level; i++) {
             Location spawnLoc = getRandomLocation();
             Zombie zombie = (Zombie) spawnLoc.getWorld().spawnEntity(spawnLoc, EntityType.ZOMBIE);
-            new CustomZombies(zombie).createZombie1();
+            new CustomZombie(zombie).createZombie1();
         }
     }
 
