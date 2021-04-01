@@ -3,10 +3,10 @@ package com.nfsprodriver.zombieland.game;
 import com.nfsprodriver.zombieland.abstracts.Area;
 import com.nfsprodriver.zombieland.entities.CustomZombie;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.*;
-import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.metadata.MetadataValue;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scoreboard.*;
@@ -65,18 +65,18 @@ public class ZombieLand {
     }
 
     private boolean playerIsInGame(Player player) {
-        int areaLives = config.getInt("zlrules.playerLives");
-        if (player.getMetadata("zlLives" + name).size() > 0) {
-            areaLives = player.getMetadata("zlLives" + name).get(0).asInt();
+        NamespacedKey areaLivesKey = new NamespacedKey(plugin, "zlLives" + name);
+        Integer areaLives = player.getPersistentDataContainer().get(areaLivesKey, PersistentDataType.INTEGER);
+        if (areaLives != null) {
             if (areaLives == 0) {
                 return false;
             }
             return true;
         } else {
+            areaLives = config.getInt("zlrules.playerLives");
             Location playerLoc = player.getLocation();
             if ((playerLoc.getX() > area.loc1.getX() && playerLoc.getX() < area.loc2.getX() && playerLoc.getZ() > area.loc1.getZ() && playerLoc.getZ() < area.loc2.getZ())) {
-                MetadataValue newAreaLives = new FixedMetadataValue(plugin, areaLives);
-                player.setMetadata("zlLives" + name, newAreaLives);
+                player.getPersistentDataContainer().set(areaLivesKey, PersistentDataType.INTEGER, areaLives);
                 return true;
             }
         }
@@ -133,12 +133,13 @@ public class ZombieLand {
     private void playerScoreboard(Player player) {
         Scoreboard playerSb = player.getScoreboard();
         if (playerSb != scoreboard) {
-            String teamName = (String) config.getConfigurationSection("teams").getKeys(false).toArray()[0];
-            if (player.getMetadata("team").size() > 0) {
-                teamName = player.getMetadata("team").get(0).asString();
+            NamespacedKey teamKey = new NamespacedKey(plugin, "team");
+            String teamName = player.getPersistentDataContainer().get(teamKey, PersistentDataType.STRING);
+            if (teamName == null) {
+                teamName = (String) config.getConfigurationSection("teams").getKeys(false).toArray()[0];;
             }
-            String finalTeamName = teamName;
             Set<Team> teams = scoreboard.getTeams();
+            String finalTeamName = teamName;
             Team playerTeam = teams.stream().filter(team -> team.getName().equals(finalTeamName)).collect(Collectors.toList()).get(0);
             playerTeam.addPlayer(player);
             playerTeam.setDisplayName(teamName);
@@ -152,6 +153,7 @@ public class ZombieLand {
 
     private Collection<Entity> getRemainingZombies() {
         BoundingBox boundingBox = new BoundingBox(area.loc1.getX(), 0.0, area.loc1.getZ(), area.loc2.getX(), 256.0, area.loc2.getZ());
-        return area.loc1.getWorld().getNearbyEntities(boundingBox, (entity -> (entity.getType() == EntityType.ZOMBIE && entity.getMetadata("gameName").size() > 0)));
+        NamespacedKey gameNameKey = new NamespacedKey(plugin, "gameName");
+        return area.loc1.getWorld().getNearbyEntities(boundingBox, (entity -> entity.getPersistentDataContainer().get(gameNameKey, PersistentDataType.STRING) != null));
     }
 }

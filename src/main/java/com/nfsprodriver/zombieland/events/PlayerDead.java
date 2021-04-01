@@ -1,15 +1,14 @@
 package com.nfsprodriver.zombieland.events;
 
-
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.metadata.MetadataValue;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Set;
@@ -37,16 +36,15 @@ public class PlayerDead implements Listener {
             ConfigurationSection zlarea = zlareas.getConfigurationSection(area);
             assert zlarea != null;
             if ((playerLoc.getX() > (double) zlarea.get("x1")) && (playerLoc.getX() > (double) zlarea.get("x2")) && (playerLoc.getZ() > (double) zlarea.get("z1")) && (playerLoc.getZ() > (double) zlarea.get("z2")))   {
-                if (player.getMetadata("zlLives" + area).size() > 0) {
-                    int areaLives = player.getMetadata("zlLives" + area).get(0).asInt();
-                    if (areaLives > 0) {
-                        areaLives--;
-                    }
-                    MetadataValue newAreaLives = new FixedMetadataValue(plugin, areaLives);
-                    player.setMetadata("zlLives" + area, newAreaLives);
-                    /*Location loc = new General(config).goToSpawnEntry(playerLoc);
-                    player.teleport(loc);*/
+                NamespacedKey areaLivesKey = new NamespacedKey(plugin, "zlLives" + area);
+                Integer areaLives = player.getPersistentDataContainer().get(areaLivesKey, PersistentDataType.INTEGER);
+                assert areaLives != null;
+                if (areaLives > 0) {
+                    areaLives--;
                 }
+                player.getPersistentDataContainer().set(areaLivesKey, PersistentDataType.INTEGER, areaLives);
+                /*Location loc = new General(config).goToSpawnEntry(playerLoc);
+                player.teleport(loc);*/
             }
         });
     }

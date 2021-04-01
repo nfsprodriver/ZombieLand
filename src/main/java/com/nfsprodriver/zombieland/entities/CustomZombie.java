@@ -1,11 +1,13 @@
 package com.nfsprodriver.zombieland.entities;
 
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class CustomZombie {
@@ -20,8 +22,8 @@ public class CustomZombie {
     }
 
     public Zombie createZombie1() {
-        MetadataValue zombieGameName = new FixedMetadataValue(plugin, gameName);
-        zombie.setMetadata("gameName", zombieGameName);
+        NamespacedKey gameNameKey = new NamespacedKey(plugin, "gameName");
+        zombie.getPersistentDataContainer().set(gameNameKey, PersistentDataType.STRING, gameName);
         EntityEquipment equipment = zombie.getEquipment();
         assert equipment != null;
         ItemStack helmet = new ItemStack(Material.IRON_HELMET);

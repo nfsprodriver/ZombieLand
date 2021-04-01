@@ -1,14 +1,14 @@
 package com.nfsprodriver.zombieland.commands;
 
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.metadata.MetadataValue;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class CreateSign implements CommandExecutor {
@@ -33,12 +33,12 @@ public class CreateSign implements CommandExecutor {
                 area = args[1];
             }
             if (block != null && block.getType() == Material.OAK_SIGN && (type.equals("zl") || type.equals("spawn"))) {
-                MetadataValue signType = new FixedMetadataValue(plugin, type);
-                block.setMetadata("signType", signType);
                 Sign sign = (Sign) block.getState();
+                NamespacedKey signTypeKey = new NamespacedKey(plugin, "signType");
+                sign.getPersistentDataContainer().set(signTypeKey, PersistentDataType.STRING, type);
                 if (type.equals("zl")) {
-                    MetadataValue zlArea = new FixedMetadataValue(plugin, area);
-                    block.setMetadata("zlArea", zlArea);
+                    NamespacedKey zlAreaKey = new NamespacedKey(plugin, "zlArea");
+                    sign.getPersistentDataContainer().set(zlAreaKey, PersistentDataType.STRING, area);
                     sign.setLine(0, "ZombieLand " + area);
                 } else if(type.equals("spawn")) {
                     sign.setLine(0, "Spawn");
