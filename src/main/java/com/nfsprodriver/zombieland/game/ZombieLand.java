@@ -2,6 +2,7 @@ package com.nfsprodriver.zombieland.game;
 
 import com.nfsprodriver.zombieland.abstracts.Area;
 import com.nfsprodriver.zombieland.entities.CustomZombie;
+import com.nfsprodriver.zombieland.functions.General;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Location;
@@ -123,16 +124,22 @@ public class ZombieLand {
         }
     }
 
-    private void stopGame() {
+    public void stopGame() {
         pauseTimer = 0;
         timer = 0;
         level = 0;
         getRemainingZombies().forEach(Entity::remove);
         plugin.getServer().getOnlinePlayers().forEach(player -> {
+            NamespacedKey areaLivesKey = new NamespacedKey(plugin, "zlLives" + name);
+            player.getPersistentDataContainer().remove(areaLivesKey);
+            removeBossbar(player);
+            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(""));
             if (player.getScoreboard() == scoreboard) {
                 player.setScoreboard(scoreboardManager.getNewScoreboard());
+                Location loc1 = area.loc1.clone();
+                Location spawnLoc = new General(plugin.getConfig()).goToSpawnEntry(loc1);
+                player.teleport(spawnLoc);
             }
-            removeBossbar(player);
         });
     }
 
@@ -162,10 +169,8 @@ public class ZombieLand {
             playerTeam.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.FOR_OWN_TEAM);
             playerTeam.addPlayer(player);
             playerTeam.setDisplayName(teamName);
-            Score score = scoreboard.getObjective("zombieland" + name).getScore("Timer");
-            score.setScore(timer);
-            Score score1 = scoreboard.getObjective("zombieland" + name).getScore(player.getName() + " kills");
-            score1.setScore(0);
+            Score score = scoreboard.getObjective("zombieland" + name).getScore(player.getName() + " kills");
+            score.setScore(0);
             player.setScoreboard(scoreboard);
         }
     }

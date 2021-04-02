@@ -15,4 +15,7 @@ commands:
   zlsetteam:
     description: Set team of player
     usage: /zlsetteam player team
+  zlstopgame:
+    description: Stop a specific game by name
+    usage: /zlstopgame [gamename]
 

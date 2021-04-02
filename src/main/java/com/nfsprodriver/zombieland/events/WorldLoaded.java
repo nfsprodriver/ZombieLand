@@ -12,6 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -19,11 +20,13 @@ public class WorldLoaded implements Listener {
     private final JavaPlugin plugin;
     private Logger logger;
     private final FileConfiguration config;
+    private Map<String, ZombieLand> games;
 
-    public WorldLoaded(JavaPlugin plugin) {
+    public WorldLoaded(JavaPlugin plugin, Map<String, ZombieLand> games) {
         this.plugin = plugin;
         this.logger = plugin.getLogger();
         this.config = plugin.getConfig();
+        this.games = games;
     }
 
     @EventHandler
@@ -39,6 +42,7 @@ public class WorldLoaded implements Listener {
                 assert zlarea != null;
                 Area area = new Area(spawnLoc, (double) zlarea.get("x1"), (double) zlarea.get("x2"), (double) zlarea.get("z1"), (double) zlarea.get("z2"));
                 ZombieLand game = new ZombieLand(plugin, area, Bukkit.getScheduler(), zlareasKey);
+                games.put(zlareasKey, game);
                 game.init();
             });
         }
