@@ -1,6 +1,6 @@
 spawnentry:
   x: 50.0
-  y: 64.0
+  y: 4.0
   z: 50.0
 
 zlareas:
@@ -11,7 +11,7 @@ zlareas:
     z2: 125.0
     entry:
       x: 100.0
-      y: 64.0
+      y: 5.0
       z: 100.0
 
 zlrules:

@@ -18,7 +18,6 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scoreboard.*;
 import org.bukkit.util.BoundingBox;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -58,8 +57,8 @@ public class ZombieLand {
                     playersInGame.add(player);
                     playerScoreboard(player);
                     addBossbar(player);
-                    Score score = scoreboard.getObjective("zombieland" + name).getScore("Timer");
-                    score.setScore(timer);
+                    Score score = scoreboard.getObjective("zombieland" + name).getScore("Level");
+                    score.setScore(level);
                 }
             });
             if (playersInGame.size() > 0) {
@@ -81,7 +80,7 @@ public class ZombieLand {
         Integer areaLives = player.getPersistentDataContainer().get(areaLivesKey, PersistentDataType.INTEGER);
         if (areaLives != null) {
 
-            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("Lives: " + areaLives));
+            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("Lives: " + areaLives + "    Game time: " + timer));
 
             if (areaLives == 0) {
                 return false;
@@ -103,7 +102,7 @@ public class ZombieLand {
         Random rand = new Random();
         int x = rand.nextInt((int) area.loc2.getX() - (int) area.loc1.getX() + 1) + (int) area.loc1.getX();
         int z = rand.nextInt((int) area.loc2.getZ() - (int) area.loc1.getZ() + 1) + (int) area.loc1.getZ();
-        int y = randomLocation.getWorld().getHighestBlockYAt(x, z) + 1;
+        int y = 5; //randomLocation.getWorld().getHighestBlockYAt(x, z) + 1;
         randomLocation.setX(x);
         randomLocation.setY(y);
         randomLocation.setZ(z);
@@ -172,13 +171,17 @@ public class ZombieLand {
     }
 
     private void generateBossbar() {
-        bossbar = plugin.getServer().createBossBar("ZombieLand " + name, BarColor.BLUE, BarStyle.SOLID, BarFlag.PLAY_BOSS_MUSIC);
+        bossbar = plugin.getServer().createBossBar("Remaining Zombies:", BarColor.BLUE, BarStyle.SOLID, BarFlag.PLAY_BOSS_MUSIC);
     }
 
     private void updateBossbar() {
+        if (level == 0) {
+            return;
+        }
         int ref = level;
         int current = getRemainingZombies().size();
-        bossbar.setProgress(current / ref);
+        bossbar.setTitle("Remaining Zombies: " + current);
+        bossbar.setProgress((double)current / (double)ref);
     }
 
     private void addBossbar(Player player) {

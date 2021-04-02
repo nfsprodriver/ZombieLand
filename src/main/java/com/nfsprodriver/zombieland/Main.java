@@ -2,10 +2,7 @@ package com.nfsprodriver.zombieland;
 
 import com.nfsprodriver.zombieland.commands.CreateSign;
 import com.nfsprodriver.zombieland.commands.SetTeam;
-import com.nfsprodriver.zombieland.events.PlayerDead;
-import com.nfsprodriver.zombieland.events.SignPress;
-import com.nfsprodriver.zombieland.events.WorldLoaded;
-import com.nfsprodriver.zombieland.events.ZombieKilled;
+import com.nfsprodriver.zombieland.events.*;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.logging.Logger;
@@ -19,6 +16,7 @@ public class Main extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new SignPress(this), this);
         getServer().getPluginManager().registerEvents(new PlayerDead(this), this);
         getServer().getPluginManager().registerEvents(new ZombieKilled(this), this);
+        getServer().getPluginManager().registerEvents(new ZombieCombust(), this);
         getCommand("zlsign").setExecutor(new CreateSign(this));
         getCommand("zlsetteam").setExecutor(new SetTeam(this));
         getLogger().info("ZombieLand enabled!");

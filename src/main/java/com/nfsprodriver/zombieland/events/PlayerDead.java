@@ -35,7 +35,7 @@ public class PlayerDead implements Listener {
         zlareasKeys.forEach(area -> {
             ConfigurationSection zlarea = zlareas.getConfigurationSection(area);
             assert zlarea != null;
-            if ((playerLoc.getX() > (double) zlarea.get("x1")) && (playerLoc.getX() > (double) zlarea.get("x2")) && (playerLoc.getZ() > (double) zlarea.get("z1")) && (playerLoc.getZ() > (double) zlarea.get("z2")))   {
+            if ((playerLoc.getX() > (double) zlarea.get("x1")) && (playerLoc.getX() < (double) zlarea.get("x2")) && (playerLoc.getZ() > (double) zlarea.get("z1")) && (playerLoc.getZ() < (double) zlarea.get("z2")))   {
                 NamespacedKey areaLivesKey = new NamespacedKey(plugin, "zlLives" + area);
                 Integer areaLives = player.getPersistentDataContainer().get(areaLivesKey, PersistentDataType.INTEGER);
                 assert areaLives != null;
