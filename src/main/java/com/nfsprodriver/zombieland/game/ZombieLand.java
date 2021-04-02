@@ -2,8 +2,14 @@ package com.nfsprodriver.zombieland.game;
 
 import com.nfsprodriver.zombieland.abstracts.Area;
 import com.nfsprodriver.zombieland.entities.CustomZombie;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarFlag;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.*;
 import org.bukkit.persistence.PersistentDataType;
@@ -12,7 +18,9 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scoreboard.*;
 import org.bukkit.util.BoundingBox;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class ZombieLand {
@@ -22,6 +30,7 @@ public class ZombieLand {
     private final ScoreboardManager scoreboardManager;
     private final FileConfiguration config;
     private List<Player> playersInGame = new ArrayList<>();
+    public BossBar bossbar;
     public Scoreboard scoreboard;
     public String name;
     public Integer pauseTimer = 0;
@@ -39,13 +48,16 @@ public class ZombieLand {
 
     public void init() {
         generateScoreboard();
+        generateBossbar();
         scheduler.runTaskTimer(plugin, () -> {
+            updateBossbar();
             playersInGame.clear();
             Collection<? extends Player> onlinePlayers = plugin.getServer().getOnlinePlayers();
             onlinePlayers.forEach(player -> {
                 if (playerIsInGame(player)) {
                     playersInGame.add(player);
                     playerScoreboard(player);
+                    addBossbar(player);
                     Score score = scoreboard.getObjective("zombieland" + name).getScore("Timer");
                     score.setScore(timer);
                 }
@@ -68,6 +80,9 @@ public class ZombieLand {
         NamespacedKey areaLivesKey = new NamespacedKey(plugin, "zlLives" + name);
         Integer areaLives = player.getPersistentDataContainer().get(areaLivesKey, PersistentDataType.INTEGER);
         if (areaLives != null) {
+
+            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("Lives: " + areaLives));
+
             if (areaLives == 0) {
                 return false;
             }
@@ -88,7 +103,7 @@ public class ZombieLand {
         Random rand = new Random();
         int x = rand.nextInt((int) area.loc2.getX() - (int) area.loc1.getX() + 1) + (int) area.loc1.getX();
         int z = rand.nextInt((int) area.loc2.getZ() - (int) area.loc1.getZ() + 1) + (int) area.loc1.getZ();
-        int y = randomLocation.getWorld().getHighestBlockAt(x, z).getY() + 1;
+        int y = randomLocation.getWorld().getHighestBlockYAt(x, z) + 1;
         randomLocation.setX(x);
         randomLocation.setY(y);
         randomLocation.setZ(z);
@@ -114,9 +129,12 @@ public class ZombieLand {
         timer = 0;
         level = 0;
         getRemainingZombies().forEach(Entity::remove);
-        /*plugin.getServer().getOnlinePlayers().forEach(player -> { TODO
-            player.setScoreboard(scoreboardManager.getNewScoreboard());
-        });*/
+        plugin.getServer().getOnlinePlayers().forEach(player -> {
+            if (player.getScoreboard() == scoreboard) {
+                player.setScoreboard(scoreboardManager.getNewScoreboard());
+            }
+            removeBossbar(player);
+        });
     }
 
     private void generateScoreboard() {
@@ -141,6 +159,8 @@ public class ZombieLand {
             Set<Team> teams = scoreboard.getTeams();
             String finalTeamName = teamName;
             Team playerTeam = teams.stream().filter(team -> team.getName().equals(finalTeamName)).collect(Collectors.toList()).get(0);
+            playerTeam.setAllowFriendlyFire(false);
+            playerTeam.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.FOR_OWN_TEAM);
             playerTeam.addPlayer(player);
             playerTeam.setDisplayName(teamName);
             Score score = scoreboard.getObjective("zombieland" + name).getScore("Timer");
@@ -148,6 +168,28 @@ public class ZombieLand {
             Score score1 = scoreboard.getObjective("zombieland" + name).getScore(player.getName() + " kills");
             score1.setScore(0);
             player.setScoreboard(scoreboard);
+        }
+    }
+
+    private void generateBossbar() {
+        bossbar = plugin.getServer().createBossBar("ZombieLand " + name, BarColor.BLUE, BarStyle.SOLID, BarFlag.PLAY_BOSS_MUSIC);
+    }
+
+    private void updateBossbar() {
+        int ref = level;
+        int current = getRemainingZombies().size();
+        bossbar.setProgress(current / ref);
+    }
+
+    private void addBossbar(Player player) {
+        if (!(bossbar.getPlayers().contains(player))) {
+            bossbar.addPlayer(player);
+        }
+    }
+
+    private void removeBossbar(Player player) {
+        if (bossbar.getPlayers().contains(player)) {
+            bossbar.removePlayer(player);
         }
     }
 
