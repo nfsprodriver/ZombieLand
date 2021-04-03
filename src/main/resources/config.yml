@@ -13,10 +13,24 @@ zlareas:
       x: 100.0
       y: 5.0
       z: 100.0
+    options:
+      maxLevel: 5
+      pauseTime: 30
+      playerLives: 3
 
-zlrules:
-  pauseTime: 30
-  playerLives: 3
+zllevels:
+  1:
+    Zombie1: 3
+  2:
+    Zombie1: 7
+  3:
+    Zombie1: 10
+  4:
+    Zombie1: 13
+  5:
+    Zombie1: 17
+  6:
+    Zombie1: 20
 
 teams:
   red: red

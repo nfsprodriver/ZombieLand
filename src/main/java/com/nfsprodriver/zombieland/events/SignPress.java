@@ -59,7 +59,7 @@ public class SignPress implements Listener {
         if (zlLives != null) {
             return zlLives > 0;
         } else {
-            player.getPersistentDataContainer().set(zlLivesKey, PersistentDataType.INTEGER, config.getInt("zlrules.playerLives"));
+            player.getPersistentDataContainer().set(zlLivesKey, PersistentDataType.INTEGER, config.getInt("zlareas." + area + ".options.playerLives"));
             return true;
         }
     }
