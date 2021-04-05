@@ -34,10 +34,12 @@ public class CustomZombie {
         ItemStack mainHand = new ItemStack(Material.IRON_SWORD);
         equipment.setHelmet(helmet);
         equipment.setItemInMainHand(mainHand);
-        Map<ItemStack, Float> dropsMap = new HashMap<ItemStack, Float>(); //Float is for probability from 0.0 to 1.0
+        Map<ItemStack, Float> dropsMap = new HashMap<>(); //Float is for probability from 0.0 to 1.0
         dropsMap.put(new ItemStack(Material.BREAD, 3), 0.3F);
         NamespacedKey customDropsKey = new NamespacedKey(plugin, "customDrops");
+        NamespacedKey killMoneyKey = new NamespacedKey(plugin, "killMoney");
         zombie.getPersistentDataContainer().set(customDropsKey, PersistentDataType.STRING, mapToString(dropsMap));
+        zombie.getPersistentDataContainer().set(killMoneyKey, PersistentDataType.DOUBLE, 10.0);
 
         return zombie;
     }

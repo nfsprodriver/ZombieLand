@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -16,9 +17,10 @@ import org.bukkit.scoreboard.Score;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class ZombieKilled implements Listener {
-    private JavaPlugin plugin;
+    private final JavaPlugin plugin;
 
     public ZombieKilled(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -28,15 +30,16 @@ public class ZombieKilled implements Listener {
     public void onZombieKilled(EntityDeathEvent event) {
         NamespacedKey gameNameKey = new NamespacedKey(plugin, "gameName");
         event.getDrops().clear();
-        String gameName = event.getEntity().getPersistentDataContainer().get(gameNameKey, PersistentDataType.STRING);
+        LivingEntity entity = event.getEntity();
+        String gameName = entity.getPersistentDataContainer().get(gameNameKey, PersistentDataType.STRING);
         assert gameName != null;
-        if (event.getEntity().getKiller() != null) {
-            Player player = event.getEntity().getKiller();
-            Score score = player.getScoreboard().getObjective("zombieland" + gameName).getScore(player.getName() + " kills");
+        if (entity.getKiller() != null) {
+            Player player = entity.getKiller();
+            Score score = Objects.requireNonNull(player.getScoreboard().getObjective("zombieland" + gameName)).getScore(player.getName() + " kills");
             score.setScore(score.getScore() + 1);
         }
         NamespacedKey dropsStringKey = new NamespacedKey(plugin, "customDrops");
-        String dropsString = event.getEntity().getPersistentDataContainer().get(dropsStringKey, PersistentDataType.STRING);
+        String dropsString = entity.getPersistentDataContainer().get(dropsStringKey, PersistentDataType.STRING);
         assert dropsString != null;
         Map<ItemStack, Float> dropsMap = stringToMap(dropsString);
         dropsMap.forEach(((itemStack, prob) -> {
@@ -48,10 +51,10 @@ public class ZombieKilled implements Listener {
 
     private Map<ItemStack, Float> stringToMap(String jsonString) {
         JsonArray json = new JsonParser().parse(jsonString).getAsJsonArray();
-        Map<ItemStack, Float> map = new HashMap<ItemStack, Float>();
+        Map<ItemStack, Float> map = new HashMap<>();
         for (int i = 0; i < json.size(); i++) {
             JsonObject item = new JsonParser().parse(json.get(i).getAsString()).getAsJsonObject();
-            ItemStack itemStack = new ItemStack(Material.getMaterial(item.get("material").getAsString()), item.get("amount").getAsInt());
+            ItemStack itemStack = new ItemStack(Objects.requireNonNull(Material.getMaterial(item.get("material").getAsString())), item.get("amount").getAsInt());
             Float prob = item.get("prob").getAsFloat();
             map.put(itemStack, prob);
         }

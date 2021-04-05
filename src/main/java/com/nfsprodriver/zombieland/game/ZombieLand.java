@@ -67,7 +67,7 @@ public class ZombieLand {
                     playersInGame.add(player);
                     playerScoreboard(player);
                     addBossbar(player);
-                    Score score = scoreboard.getObjective("zombieland" + name).getScore("Level");
+                    Score score = Objects.requireNonNull(scoreboard.getObjective("zombieland" + name)).getScore("Level");
                     score.setScore(level);
                 }
             });
@@ -80,9 +80,7 @@ public class ZombieLand {
                             nextLevel();
                         }
                     } else {
-                        playersInGame.forEach(player -> {
-                            player.sendTitle("Congratulations!", "You won the game \"ZombieLand " + name + "\"", 20, 100, 20);
-                        });
+                        playersInGame.forEach(player -> player.sendTitle("Congratulations!", "You won the game \"ZombieLand " + name + "\"", 20, 100, 20));
                         stopGame();
                     }
                 }
@@ -101,12 +99,10 @@ public class ZombieLand {
             int seconds = timer % 60;
 
             String timeString = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("Lives: " + areaLives + "    Game time: " + timeString));
+            String actionBarText = "Lives: " + areaLives + "    Game time: " + timeString;
+            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(actionBarText));
 
-            if (areaLives == 0) {
-                return false;
-            }
-            return true;
+            return areaLives != 0;
         } else {
             areaLives = playerLives;
             Location playerLoc = player.getLocation();
@@ -134,10 +130,9 @@ public class ZombieLand {
     private void nextLevel() {
         pauseTimer = 0;
         level++;
-        playersInGame.forEach(player -> {
-            player.sendTitle("Level " + level, "", 20, 100, 20);
-        });
+        playersInGame.forEach(player -> player.sendTitle("Level " + level, "", 20, 100, 20));
         ConfigurationSection zlLevel = config.getConfigurationSection("zllevels." + level);
+        assert zlLevel != null;
         Set<String> zombieTypes = zlLevel.getKeys(false);
         levelTotZomb = 0;
         zombieTypes.forEach(zombieType -> {
@@ -145,7 +140,7 @@ public class ZombieLand {
             levelTotZomb += count;
             for (int i = 0; i < count; i++) {
                 Location spawnLoc = getRandomLocation();
-                Zombie zombie = (Zombie) spawnLoc.getWorld().spawnEntity(spawnLoc, EntityType.ZOMBIE);
+                Zombie zombie = (Zombie) Objects.requireNonNull(spawnLoc.getWorld()).spawnEntity(spawnLoc, EntityType.ZOMBIE);
                 CustomZombie customZombie = new CustomZombie(zombie, name, plugin);
                 try {
                     customZombie.getClass().getDeclaredMethod("create" + zombieType).invoke(customZombie);
@@ -177,10 +172,8 @@ public class ZombieLand {
 
     private void generateScoreboard() {
         scoreboard = scoreboardManager.getNewScoreboard();
-        Set<String> teamNames = config.getConfigurationSection("teams").getKeys(false);
-        teamNames.forEach(teamName -> {
-            scoreboard.registerNewTeam(teamName);
-        });
+        Set<String> teamNames = Objects.requireNonNull(config.getConfigurationSection("teams")).getKeys(false);
+        teamNames.forEach(teamName -> scoreboard.registerNewTeam(teamName));
         Objective objective = scoreboard.registerNewObjective("zombieland" + name, "dummy", "ZombieLand " + name);
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
         objective.setDisplayName("ZombieLand " + name);
@@ -192,7 +185,7 @@ public class ZombieLand {
             NamespacedKey teamKey = new NamespacedKey(plugin, "team");
             String teamName = player.getPersistentDataContainer().get(teamKey, PersistentDataType.STRING);
             if (teamName == null) {
-                teamName = (String) config.getConfigurationSection("teams").getKeys(false).toArray()[0];;
+                teamName = (String) Objects.requireNonNull(config.getConfigurationSection("teams")).getKeys(false).toArray()[0];
             }
             Set<Team> teams = scoreboard.getTeams();
             String finalTeamName = teamName;
@@ -201,7 +194,7 @@ public class ZombieLand {
             playerTeam.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.FOR_OWN_TEAM);
             playerTeam.addPlayer(player);
             playerTeam.setDisplayName(teamName);
-            Score score = scoreboard.getObjective("zombieland" + name).getScore(player.getName() + " kills");
+            Score score = Objects.requireNonNull(scoreboard.getObjective("zombieland" + name)).getScore(player.getName() + " kills");
             score.setScore(0);
             player.setScoreboard(scoreboard);
         }
@@ -235,6 +228,6 @@ public class ZombieLand {
     private Collection<Entity> getRemainingZombies() {
         BoundingBox boundingBox = new BoundingBox(area.loc1.getX(), 0.0, area.loc1.getZ(), area.loc2.getX(), 256.0, area.loc2.getZ());
         NamespacedKey gameNameKey = new NamespacedKey(plugin, "gameName");
-        return area.loc1.getWorld().getNearbyEntities(boundingBox, (entity -> entity.getPersistentDataContainer().get(gameNameKey, PersistentDataType.STRING) != null));
+        return Objects.requireNonNull(area.loc1.getWorld()).getNearbyEntities(boundingBox, (entity -> entity.getPersistentDataContainer().get(gameNameKey, PersistentDataType.STRING) != null));
     }
 }

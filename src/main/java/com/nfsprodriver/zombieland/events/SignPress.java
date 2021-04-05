@@ -15,16 +15,12 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.logging.Logger;
-
 public class SignPress implements Listener {
     private final JavaPlugin plugin;
-    private Logger logger;
     private final FileConfiguration config;
 
     public SignPress(JavaPlugin plugin) {
         this.plugin = plugin;
-        this.logger = plugin.getLogger();
         this.config = plugin.getConfig();
     }
 

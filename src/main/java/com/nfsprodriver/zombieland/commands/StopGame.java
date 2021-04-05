@@ -13,11 +13,9 @@ import java.util.Map;
 import java.util.Set;
 
 public class StopGame implements CommandExecutor {
-    private final JavaPlugin plugin;
     private final Map<String, ZombieLand> games;
 
-    public StopGame(JavaPlugin plugin, Map<String, ZombieLand> games) {
-        this.plugin = plugin;
+    public StopGame(Map<String, ZombieLand> games) {
         this.games = games;
     }
 

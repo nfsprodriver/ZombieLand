@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Objects;
 import java.util.Set;
 
 public class SetTeam implements CommandExecutor {
@@ -24,7 +25,7 @@ public class SetTeam implements CommandExecutor {
         if (!(playerName.isEmpty()) && !(teamName.isEmpty())) {
             Player player = plugin.getServer().getPlayer(playerName);
             assert player != null;
-            Set<String> teamNames = plugin.getConfig().getConfigurationSection("teams").getKeys(false);
+            Set<String> teamNames = Objects.requireNonNull(plugin.getConfig().getConfigurationSection("teams")).getKeys(false);
             if ((!teamNames.contains(teamName))) {
                 sender.sendMessage("Parse a valid team name!");
                 return false;

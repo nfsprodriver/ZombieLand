@@ -7,27 +7,23 @@ import com.nfsprodriver.zombieland.events.*;
 import com.nfsprodriver.zombieland.game.ZombieLand;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class Main extends JavaPlugin {
-
     @Override
     public void onEnable() {
         super.onEnable();
         saveDefaultConfig();
-        Map<String, ZombieLand> games = new HashMap<String, ZombieLand>();
+        Map<String, ZombieLand> games = new HashMap<>();
         getServer().getPluginManager().registerEvents(new WorldLoaded(this, games), this);
         getServer().getPluginManager().registerEvents(new SignPress(this), this);
         getServer().getPluginManager().registerEvents(new PlayerDead(this), this);
         getServer().getPluginManager().registerEvents(new ZombieKilled(this), this);
         getServer().getPluginManager().registerEvents(new ZombieCombust(), this);
-        getCommand("zlsign").setExecutor(new CreateSign(this));
-        getCommand("zlsetteam").setExecutor(new SetTeam(this));
-        getCommand("zlstopgame").setExecutor(new StopGame(this, games));
+        Objects.requireNonNull(getCommand("zlsign")).setExecutor(new CreateSign(this));
+        Objects.requireNonNull(getCommand("zlsetteam")).setExecutor(new SetTeam(this));
+        Objects.requireNonNull(getCommand("zlstopgame")).setExecutor(new StopGame(games));
         getLogger().info("ZombieLand enabled!");
     }
 
