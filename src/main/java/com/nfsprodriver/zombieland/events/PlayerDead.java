@@ -1,9 +1,8 @@
 package com.nfsprodriver.zombieland.events;
 
+import com.nfsprodriver.zombieland.game.ZombieLand;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -11,29 +10,24 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Set;
+import java.util.Map;
 
 public class PlayerDead implements Listener {
     private final JavaPlugin plugin;
-    private final FileConfiguration config;
+    private final Map<String, ZombieLand> games;
 
-    public PlayerDead(JavaPlugin plugin) {
+    public PlayerDead(JavaPlugin plugin, Map<String, ZombieLand> games) {
         this.plugin = plugin;
-        this.config = plugin.getConfig();
+        this.games = games;
     }
 
     @EventHandler
     public void onPlayerDead(PlayerDeathEvent event) {
         Player player = event.getEntity();
         Location playerLoc = player.getLocation();
-        ConfigurationSection zlareas = config.getConfigurationSection("zlareas");
-        assert zlareas != null;
-        Set<String> zlareasKeys = zlareas.getKeys(false);
-        zlareasKeys.forEach(area -> {
-            ConfigurationSection zlarea = zlareas.getConfigurationSection(area);
-            assert zlarea != null;
-            if ((playerLoc.getX() > zlarea.getDouble("x1")) && (playerLoc.getX() < zlarea.getDouble("x2")) && (playerLoc.getZ() > zlarea.getDouble("z1")) && (playerLoc.getZ() < zlarea.getDouble("z2")))   {
-                NamespacedKey areaLivesKey = new NamespacedKey(plugin, "zlLives" + area);
+        games.values().forEach(game -> {
+            if (game.area.locIsInArea(playerLoc))   {
+                NamespacedKey areaLivesKey = new NamespacedKey(plugin, "zlLives" + game.name);
                 Integer areaLives = player.getPersistentDataContainer().get(areaLivesKey, PersistentDataType.INTEGER);
                 assert areaLives != null;
                 if (areaLives > 0) {

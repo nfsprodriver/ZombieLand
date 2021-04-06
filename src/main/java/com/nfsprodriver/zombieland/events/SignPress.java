@@ -1,6 +1,8 @@
 package com.nfsprodriver.zombieland.events;
 
+import com.nfsprodriver.zombieland.abstracts.Area;
 import com.nfsprodriver.zombieland.functions.General;
+import com.nfsprodriver.zombieland.game.ZombieLand;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -15,13 +17,17 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Map;
+
 public class SignPress implements Listener {
     private final JavaPlugin plugin;
     private final FileConfiguration config;
+    private final Map<String, ZombieLand> games;
 
-    public SignPress(JavaPlugin plugin) {
+    public SignPress(JavaPlugin plugin, Map<String, ZombieLand> games) {
         this.plugin = plugin;
         this.config = plugin.getConfig();
+        this.games = games;
     }
 
     @EventHandler
@@ -33,19 +39,27 @@ public class SignPress implements Listener {
             String type = sign.getPersistentDataContainer().get(signTypeKey, PersistentDataType.STRING);
             assert type != null;
             Player player = event.getPlayer();
-            Location loc = player.getLocation();
+            Location playerLoc = player.getLocation();
             if (type.equals("zl")) {
                 NamespacedKey zlAreaKey = new NamespacedKey(plugin, "zlArea");
                 String area = sign.getPersistentDataContainer().get(zlAreaKey, PersistentDataType.STRING);
                 if (enterGame(player, area)) {
-                    loc.setX(config.getInt("zlareas." + area + ".entry.x"));
-                    loc.setY(config.getInt("zlareas." + area + ".entry.y"));
-                    loc.setZ(config.getInt("zlareas." + area + ".entry.z"));
+                    playerLoc.setX(config.getInt("zlareas." + area + ".entry.x"));
+                    playerLoc.setY(config.getInt("zlareas." + area + ".entry.y"));
+                    playerLoc.setZ(config.getInt("zlareas." + area + ".entry.z"));
+                } else {
+                    player.sendMessage("No lives left for running game, please wait for next game!");
                 }
             } else if(type.equals("spawn")) {
-                loc = new General(config).goToSpawnEntry(loc);
+                Location finalPlayerLoc = playerLoc;
+                games.values().forEach(game -> {
+                    if (game.area.locIsInArea(finalPlayerLoc)) {
+                        game.playerLeaveGame(player);
+                    }
+                });
+                playerLoc = new General(config).goToSpawnEntry(playerLoc);
             }
-            player.teleport(loc);
+            player.teleport(playerLoc);
         }
     }
 

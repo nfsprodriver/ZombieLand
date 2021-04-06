@@ -17,9 +17,10 @@ public class Main extends JavaPlugin {
         saveDefaultConfig();
         Map<String, ZombieLand> games = new HashMap<>();
         getServer().getPluginManager().registerEvents(new WorldLoaded(this, games), this);
-        getServer().getPluginManager().registerEvents(new SignPress(this), this);
-        getServer().getPluginManager().registerEvents(new PlayerDead(this), this);
-        getServer().getPluginManager().registerEvents(new ZombieKilled(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerJoin(this, games), this);
+        getServer().getPluginManager().registerEvents(new SignPress(this, games), this);
+        getServer().getPluginManager().registerEvents(new PlayerDead(this, games), this);
+        getServer().getPluginManager().registerEvents(new ZombieKilled(this, games), this);
         getServer().getPluginManager().registerEvents(new ZombieCombust(), this);
         Objects.requireNonNull(getCommand("zlsign")).setExecutor(new CreateSign(this));
         Objects.requireNonNull(getCommand("zlsetteam")).setExecutor(new SetTeam(this));

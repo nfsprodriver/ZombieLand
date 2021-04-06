@@ -39,7 +39,7 @@ public class CustomZombie {
         NamespacedKey customDropsKey = new NamespacedKey(plugin, "customDrops");
         NamespacedKey killMoneyKey = new NamespacedKey(plugin, "killMoney");
         zombie.getPersistentDataContainer().set(customDropsKey, PersistentDataType.STRING, mapToString(dropsMap));
-        zombie.getPersistentDataContainer().set(killMoneyKey, PersistentDataType.DOUBLE, 10.0);
+        zombie.getPersistentDataContainer().set(killMoneyKey, PersistentDataType.INTEGER, 10);
 
         return zombie;
     }

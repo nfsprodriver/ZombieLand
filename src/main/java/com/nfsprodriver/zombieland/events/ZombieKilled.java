@@ -3,6 +3,7 @@ package com.nfsprodriver.zombieland.events;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.nfsprodriver.zombieland.game.ZombieLand;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
@@ -21,9 +22,11 @@ import java.util.Objects;
 
 public class ZombieKilled implements Listener {
     private final JavaPlugin plugin;
+    private final Map<String, ZombieLand> games;
 
-    public ZombieKilled(JavaPlugin plugin) {
+    public ZombieKilled(JavaPlugin plugin, Map<String, ZombieLand> games) {
         this.plugin = plugin;
+        this.games = games;
     }
 
     @EventHandler
@@ -35,8 +38,23 @@ public class ZombieKilled implements Listener {
         assert gameName != null;
         if (entity.getKiller() != null) {
             Player player = entity.getKiller();
-            Score score = Objects.requireNonNull(player.getScoreboard().getObjective("zombieland" + gameName)).getScore(player.getName() + " kills");
-            score.setScore(score.getScore() + 1);
+            //Score score = Objects.requireNonNull(player.getScoreboard().getObjective("zombieland" + gameName)).getScore(player.getName() + " kills");
+            //score.setScore(score.getScore() + 1);
+            NamespacedKey killMoneyKey = new NamespacedKey(plugin, "killMoney");
+            Integer killMoney = entity.getPersistentDataContainer().get(killMoneyKey, PersistentDataType.INTEGER);
+            assert killMoney != null;
+            Score score = Objects.requireNonNull(player.getScoreboard().getObjective("zombieland" + gameName)).getScore(player.getName() + " money");
+            score.setScore(score.getScore() + killMoney);
+            ZombieLand game = games.get(gameName);
+            game.updateBossbar();
+            NamespacedKey playerGameMoneyKey = new NamespacedKey(plugin, game.uuid + "_money");
+            Integer playerGameMoney = player.getPersistentDataContainer().get(playerGameMoneyKey, PersistentDataType.INTEGER);
+            if (playerGameMoney != null) {
+                playerGameMoney += killMoney;
+            } else {
+                playerGameMoney = killMoney;
+            }
+            player.getPersistentDataContainer().set(playerGameMoneyKey, PersistentDataType.INTEGER, playerGameMoney);
         }
         NamespacedKey dropsStringKey = new NamespacedKey(plugin, "customDrops");
         String dropsString = entity.getPersistentDataContainer().get(dropsStringKey, PersistentDataType.STRING);

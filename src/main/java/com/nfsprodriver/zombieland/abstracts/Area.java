@@ -14,4 +14,8 @@ public class Area {
         this.loc2.setX(x2);
         this.loc2.setZ(z2);
     }
+    
+    public boolean locIsInArea(Location loc) {
+        return (loc.getX() > this.loc1.getX() && loc.getX() < this.loc2.getX() && loc.getZ() > this.loc1.getZ() && loc.getZ() < this.loc2.getZ());
+    }
 }

@@ -27,17 +27,18 @@ import java.util.stream.Collectors;
 
 public class ZombieLand {
     private final JavaPlugin plugin;
-    private final Area area;
     private final Integer maxLevel;
     private final Integer pauseTime;
     private final Integer playerLives;
     private final BukkitScheduler scheduler;
     private final ScoreboardManager scoreboardManager;
     private final FileConfiguration config;
+    public final Area area;
     private List<Player> playersInGame = new ArrayList<>();
     public BossBar bossbar;
     public Scoreboard scoreboard;
     public String name;
+    public UUID uuid;
     private Integer pauseTimer = 0;
     private Integer timer = 0;
     private Integer level = 0;
@@ -53,6 +54,7 @@ public class ZombieLand {
         this.maxLevel = config.getInt("zlareas." + name + ".options.maxLevel");
         this.pauseTime = config.getInt("zlareas." + name + ".options.pauseTime");
         this.playerLives = config.getInt("zlareas." + name + ".options.playerLives");
+        this.uuid = UUID.randomUUID();
     }
 
     public void init() {
@@ -60,24 +62,22 @@ public class ZombieLand {
         generateBossbar();
         scheduler.runTaskTimer(plugin, () -> {
             updateBossbar();
-            playersInGame.clear();
-            Collection<? extends Player> onlinePlayers = plugin.getServer().getOnlinePlayers();
-            onlinePlayers.forEach(player -> {
-                if (playerIsInGame(player)) {
+            plugin.getServer().getOnlinePlayers().forEach(player -> {
+                if (playerIsInGame(player) && !(playersInGame.contains(player))) {
                     playersInGame.add(player);
                     playerScoreboard(player);
                     addBossbar(player);
-                    Score score = Objects.requireNonNull(scoreboard.getObjective("zombieland" + name)).getScore("Level");
-                    score.setScore(level);
                 }
             });
             if (playersInGame.size() > 0) {
                 timer++;
+                updateActionBar();
                 if (getRemainingZombies().size() == 0) {
                     pauseTimer++;
                     if (level < maxLevel) {
                         if ((pauseTimer.equals((level + 1) * 3) || pauseTimer.equals(pauseTime))) {
                             nextLevel();
+                            updateActionBar();
                         }
                     } else {
                         playersInGame.forEach(player -> player.sendTitle("Congratulations!", "You won the game \"ZombieLand " + name + "\"", 20, 100, 20));
@@ -85,7 +85,9 @@ public class ZombieLand {
                     }
                 }
             } else {
-                stopGame();
+                if (timer > 0) {
+                    stopGame();
+                }
             }
         }, 20L, 20L);
     }
@@ -94,19 +96,11 @@ public class ZombieLand {
         NamespacedKey areaLivesKey = new NamespacedKey(plugin, "zlLives" + name);
         Integer areaLives = player.getPersistentDataContainer().get(areaLivesKey, PersistentDataType.INTEGER);
         if (areaLives != null) {
-            int hours = timer / 3600;
-            int minutes = (timer % 3600) / 60;
-            int seconds = timer % 60;
-
-            String timeString = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-            String actionBarText = "Lives: " + areaLives + "    Game time: " + timeString;
-            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(actionBarText));
-
             return areaLives != 0;
         } else {
             areaLives = playerLives;
             Location playerLoc = player.getLocation();
-            if ((playerLoc.getX() > area.loc1.getX() && playerLoc.getX() < area.loc2.getX() && playerLoc.getZ() > area.loc1.getZ() && playerLoc.getZ() < area.loc2.getZ())) {
+            if (area.locIsInArea(playerLoc)) {
                 player.getPersistentDataContainer().set(areaLivesKey, PersistentDataType.INTEGER, areaLives);
                 return true;
             }
@@ -114,12 +108,28 @@ public class ZombieLand {
         return false;
     }
 
+    private void updateActionBar() {
+        playersInGame.forEach(player -> {
+            NamespacedKey areaLivesKey = new NamespacedKey(plugin, "zlLives" + name);
+            Integer areaLives = player.getPersistentDataContainer().get(areaLivesKey, PersistentDataType.INTEGER);
+            if (areaLives != null) {
+                int hours = timer / 3600;
+                int minutes = (timer % 3600) / 60;
+                int seconds = timer % 60;
+
+                String timeString = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+                String actionBarText = "Lives: " + areaLives + "    Level: " + level + "    Game time: " + timeString;
+                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(actionBarText));
+            }
+        });
+    }
+
     private Location getRandomLocation() {
         Location randomLocation = area.loc1.clone();
         Random rand = new Random();
         int x = rand.nextInt((int) area.loc2.getX() - (int) area.loc1.getX() + 1) + (int) area.loc1.getX();
         int z = rand.nextInt((int) area.loc2.getZ() - (int) area.loc1.getZ() + 1) + (int) area.loc1.getZ();
-        int y = 5; //randomLocation.getWorld().getHighestBlockYAt(x, z) + 1;
+        double y = config.getDouble("zlareas." + name + ".entry.y"); //randomLocation.getWorld().getHighestBlockYAt(x, z) + 1;
         randomLocation.setX(x);
         randomLocation.setY(y);
         randomLocation.setZ(z);
@@ -152,22 +162,30 @@ public class ZombieLand {
     }
 
     public void stopGame() {
+        plugin.getServer().getOnlinePlayers().forEach(player -> {
+            playerLeaveGame(player);
+            NamespacedKey areaLivesKey = new NamespacedKey(plugin, "zlLives" + name);
+            player.getPersistentDataContainer().remove(areaLivesKey);
+        });
+        uuid = UUID.randomUUID();
         pauseTimer = 0;
         timer = 0;
         level = 0;
+        playersInGame.clear();
         getRemainingZombies().forEach(Entity::remove);
-        plugin.getServer().getOnlinePlayers().forEach(player -> {
-            NamespacedKey areaLivesKey = new NamespacedKey(plugin, "zlLives" + name);
-            player.getPersistentDataContainer().remove(areaLivesKey);
-            removeBossbar(player);
-            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(""));
-            if (player.getScoreboard() == scoreboard) {
-                player.setScoreboard(scoreboardManager.getNewScoreboard());
-                Location loc1 = area.loc1.clone();
-                Location spawnLoc = new General(plugin.getConfig()).goToSpawnEntry(loc1);
-                player.teleport(spawnLoc);
-            }
-        });
+    }
+
+    public void playerLeaveGame (Player player) {
+        removeBossbar(player);
+        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(""));
+        if (player.getScoreboard() == scoreboard) {
+            player.setScoreboard(scoreboardManager.getNewScoreboard());
+            Location loc1 = area.loc1.clone();
+            Location spawnLoc = new General(plugin.getConfig()).goToSpawnEntry(loc1);
+            player.teleport(spawnLoc);
+        }
+        NamespacedKey playerGameMoneyKey = new NamespacedKey(plugin, uuid + "_money");
+        new General(config).givePlayerEmeralds(player, playerGameMoneyKey);
     }
 
     private void generateScoreboard() {
@@ -194,8 +212,15 @@ public class ZombieLand {
             playerTeam.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.FOR_OWN_TEAM);
             playerTeam.addPlayer(player);
             playerTeam.setDisplayName(teamName);
-            Score score = Objects.requireNonNull(scoreboard.getObjective("zombieland" + name)).getScore(player.getName() + " kills");
-            score.setScore(0);
+            //Score score = Objects.requireNonNull(scoreboard.getObjective("zombieland" + name)).getScore(player.getName() + " kills");
+            //score.setScore(0);
+            NamespacedKey playerGameMoneyKey = new NamespacedKey(plugin, uuid + "_money");
+            Integer playerGameMoney = player.getPersistentDataContainer().get(playerGameMoneyKey, PersistentDataType.INTEGER);
+            if (playerGameMoney == null) {
+                playerGameMoney = 0;
+            }
+            Score score = Objects.requireNonNull(scoreboard.getObjective("zombieland" + name)).getScore(player.getName() + " money");
+            score.setScore(playerGameMoney);
             player.setScoreboard(scoreboard);
         }
     }
@@ -204,7 +229,7 @@ public class ZombieLand {
         bossbar = plugin.getServer().createBossBar("Remaining Zombies:", BarColor.BLUE, BarStyle.SOLID, BarFlag.PLAY_BOSS_MUSIC);
     }
 
-    private void updateBossbar() {
+    public void updateBossbar() {
         if (level == 0) {
             return;
         }
