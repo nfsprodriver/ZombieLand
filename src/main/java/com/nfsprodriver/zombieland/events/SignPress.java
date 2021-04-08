@@ -51,12 +51,12 @@ public class SignPress implements Listener {
                     player.sendMessage("No lives left for running game, please wait for next game!");
                 }
             } else if(type.equals("spawn")) {
-                Location finalPlayerLoc = playerLoc;
+                /*Location finalPlayerLoc = playerLoc;
                 games.values().forEach(game -> {
                     if (game.area.locIsInArea(finalPlayerLoc)) {
                         game.playerLeaveGame(player);
                     }
-                });
+                });*/
                 playerLoc = new General(config).goToSpawnEntry(playerLoc);
             }
             player.teleport(playerLoc);

@@ -68,10 +68,16 @@ public class ZombieLand {
         scheduler.runTaskTimer(plugin, () -> {
             updateBossbar();
             plugin.getServer().getOnlinePlayers().forEach(player -> {
-                if (playerIsInGame(player) && !(playersInGame.contains(player))) {
-                    playersInGame.add(player);
-                    playerScoreboard(player);
-                    addBossbar(player);
+                if (playerIsInGame(player)) {
+                    if (!(playersInGame.contains(player))) {
+                        playersInGame.add(player);
+                        playerScoreboard(player);
+                        addBossbar(player);
+                    }
+                } else {
+                    if (playersInGame.contains(player)) {
+                        playerLeaveGame(player);
+                    }
                 }
             });
             if (playersInGame.size() > 0) {
@@ -126,7 +132,6 @@ public class ZombieLand {
                 }
                 String gameUuid = invStack.getItemMeta().getPersistentDataContainer().get(gameUuidKey, PersistentDataType.STRING);
                 if (gameUuid == null || !(gameUuid.equals(uuid.toString()))) {
-                    ItemMeta meta = invStack.getItemMeta();
                     invStacks.add(invStack);
                     playerInv.removeItem(invStack);
                 } else if (invStack.getType().name().endsWith("_SWORD") || invStack.getType().name().endsWith("_AXE")) {
@@ -217,16 +222,15 @@ public class ZombieLand {
         plugin.getLogger().info(player.getName() + " left the game \"Zombie Land " + name + "\"");
         removeBossbar(player);
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(""));
-        if (player.getScoreboard() == scoreboard) {
-            player.setScoreboard(scoreboardManager.getNewScoreboard());
-            Location loc1 = area.loc1.clone();
-            Location spawnLoc = new General(plugin.getConfig()).goToSpawnEntry(loc1);
-            player.teleport(spawnLoc);
-        }
-        NamespacedKey playerGameMoneyKey = new NamespacedKey(plugin, uuid + "_money");
-        new General(config).givePlayerEmeralds(player, playerGameMoneyKey);
+        player.setScoreboard(scoreboardManager.getNewScoreboard());
+        Location loc1 = area.loc1.clone();
+        Location spawnLoc = new General(plugin.getConfig()).goToSpawnEntry(loc1);
+        player.teleport(spawnLoc);
+        playersInGame.remove(player);
         player.getInventory().clear();
         giveBackInventory(player);
+        NamespacedKey playerGameMoneyKey = new NamespacedKey(plugin, uuid + "_money");
+        new General(config).givePlayerEmeralds(player, playerGameMoneyKey);
     }
 
     public void giveBackInventory(Player player) {
@@ -305,6 +309,6 @@ public class ZombieLand {
     private Collection<Entity> getRemainingZombies() {
         BoundingBox boundingBox = new BoundingBox(area.loc1.getX(), 0.0, area.loc1.getZ(), area.loc2.getX(), 256.0, area.loc2.getZ());
         NamespacedKey gameNameKey = new NamespacedKey(plugin, "gameName");
-        return Objects.requireNonNull(area.loc1.getWorld()).getNearbyEntities(boundingBox, (entity -> entity.getPersistentDataContainer().get(gameNameKey, PersistentDataType.STRING) != null));
+        return Objects.requireNonNull(area.loc1.getWorld()).getNearbyEntities(boundingBox, (entity -> Objects.equals(entity.getPersistentDataContainer().get(gameNameKey, PersistentDataType.STRING), name)));
     }
 }

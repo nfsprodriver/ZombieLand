@@ -12,6 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Score;
@@ -35,36 +36,42 @@ public class ZombieKilled implements Listener {
         event.getDrops().clear();
         LivingEntity entity = event.getEntity();
         String gameName = entity.getPersistentDataContainer().get(gameNameKey, PersistentDataType.STRING);
-        assert gameName != null;
-        if (entity.getKiller() != null) {
-            Player player = entity.getKiller();
-            //Score score = Objects.requireNonNull(player.getScoreboard().getObjective("zombieland" + gameName)).getScore(player.getName() + " kills");
-            //score.setScore(score.getScore() + 1);
-            NamespacedKey killMoneyKey = new NamespacedKey(plugin, "killMoney");
-            Integer killMoney = entity.getPersistentDataContainer().get(killMoneyKey, PersistentDataType.INTEGER);
-            assert killMoney != null;
-            Score score = Objects.requireNonNull(player.getScoreboard().getObjective("zombieland" + gameName)).getScore(player.getName() + " money");
-            score.setScore(score.getScore() + killMoney);
+        if (gameName != null) {
             ZombieLand game = games.get(gameName);
-            game.updateBossbar();
-            NamespacedKey playerGameMoneyKey = new NamespacedKey(plugin, game.uuid + "_money");
-            Integer playerGameMoney = player.getPersistentDataContainer().get(playerGameMoneyKey, PersistentDataType.INTEGER);
-            if (playerGameMoney != null) {
-                playerGameMoney += killMoney;
-            } else {
-                playerGameMoney = killMoney;
+            if (entity.getKiller() != null) {
+                Player player = entity.getKiller();
+                //Score score = Objects.requireNonNull(player.getScoreboard().getObjective("zombieland" + gameName)).getScore(player.getName() + " kills");
+                //score.setScore(score.getScore() + 1);
+                NamespacedKey killMoneyKey = new NamespacedKey(plugin, "killMoney");
+                Integer killMoney = entity.getPersistentDataContainer().get(killMoneyKey, PersistentDataType.INTEGER);
+                assert killMoney != null;
+                Score score = Objects.requireNonNull(player.getScoreboard().getObjective("zombieland" + gameName)).getScore(player.getName() + " money");
+                score.setScore(score.getScore() + killMoney);
+                game.updateBossbar();
+                NamespacedKey playerGameMoneyKey = new NamespacedKey(plugin, game.uuid + "_money");
+                Integer playerGameMoney = player.getPersistentDataContainer().get(playerGameMoneyKey, PersistentDataType.INTEGER);
+                if (playerGameMoney != null) {
+                    playerGameMoney += killMoney;
+                } else {
+                    playerGameMoney = killMoney;
+                }
+                player.getPersistentDataContainer().set(playerGameMoneyKey, PersistentDataType.INTEGER, playerGameMoney);
             }
-            player.getPersistentDataContainer().set(playerGameMoneyKey, PersistentDataType.INTEGER, playerGameMoney);
+            NamespacedKey dropsStringKey = new NamespacedKey(plugin, "customDrops");
+            String dropsString = entity.getPersistentDataContainer().get(dropsStringKey, PersistentDataType.STRING);
+            assert dropsString != null;
+            Map<ItemStack, Float> dropsMap = stringToMap(dropsString);
+            dropsMap.forEach(((itemStack, prob) -> {
+                NamespacedKey gameUuidKey = new NamespacedKey(plugin, "gameUuid");
+                ItemMeta meta = itemStack.getItemMeta();
+                assert meta != null;
+                meta.getPersistentDataContainer().set(gameUuidKey, PersistentDataType.STRING, game.uuid.toString());
+                itemStack.setItemMeta(meta);
+                if (getRandomBoolean(prob)) {
+                    event.getDrops().add(itemStack);
+                }
+            }));
         }
-        NamespacedKey dropsStringKey = new NamespacedKey(plugin, "customDrops");
-        String dropsString = entity.getPersistentDataContainer().get(dropsStringKey, PersistentDataType.STRING);
-        assert dropsString != null;
-        Map<ItemStack, Float> dropsMap = stringToMap(dropsString);
-        dropsMap.forEach(((itemStack, prob) -> {
-            if (getRandomBoolean(prob)) {
-                event.getDrops().add(itemStack);
-            }
-        }));
     }
 
     private Map<ItemStack, Float> stringToMap(String jsonString) {
