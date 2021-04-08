@@ -1,6 +1,5 @@
 package com.nfsprodriver.zombieland.events;
 
-import com.nfsprodriver.zombieland.abstracts.Area;
 import com.nfsprodriver.zombieland.functions.General;
 import com.nfsprodriver.zombieland.game.ZombieLand;
 import org.bukkit.Location;
@@ -47,19 +46,17 @@ public class SignPress implements Listener {
                     playerLoc.setX(config.getInt("zlareas." + area + ".entry.x"));
                     playerLoc.setY(config.getInt("zlareas." + area + ".entry.y"));
                     playerLoc.setZ(config.getInt("zlareas." + area + ".entry.z"));
+                    player.teleport(playerLoc);
                 } else {
                     player.sendMessage("No lives left for running game, please wait for next game!");
                 }
             } else if(type.equals("spawn")) {
-                /*Location finalPlayerLoc = playerLoc;
                 games.values().forEach(game -> {
-                    if (game.area.locIsInArea(finalPlayerLoc)) {
+                    if (game.playersInGame.contains(player)) {
                         game.playerLeaveGame(player);
                     }
-                });*/
-                playerLoc = new General(config).goToSpawnEntry(playerLoc);
+                });
             }
-            player.teleport(playerLoc);
         }
     }
 
@@ -69,7 +66,13 @@ public class SignPress implements Listener {
         if (zlLives != null) {
             return zlLives > 0;
         } else {
-            player.getPersistentDataContainer().set(zlLivesKey, PersistentDataType.INTEGER, config.getInt("zlareas." + area + ".options.playerLives"));
+            ZombieLand game = games.get(area);
+            assert game != null;
+            if (game.playersBeenInGame.contains(player.getName())) {
+                return false;
+            }
+            Integer playerLives = config.getInt("zlareas." + area + ".options.playerLives");
+            player.getPersistentDataContainer().set(zlLivesKey, PersistentDataType.INTEGER, playerLives);
             return true;
         }
     }

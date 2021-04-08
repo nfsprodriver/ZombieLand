@@ -38,7 +38,8 @@ public class ZombieLand {
     private final ScoreboardManager scoreboardManager;
     private final FileConfiguration config;
     public final Area area;
-    private List<Player> playersInGame = new ArrayList<>();
+    public List<Player> playersInGame = new ArrayList<>();
+    public List<String> playersBeenInGame = new ArrayList<>();
     public Map<Player, List<ItemStack>> savedInventories = new HashMap<>();
     public BossBar bossbar;
     public Scoreboard scoreboard;
@@ -71,6 +72,7 @@ public class ZombieLand {
                 if (playerIsInGame(player)) {
                     if (!(playersInGame.contains(player))) {
                         playersInGame.add(player);
+                        playersBeenInGame.add(player.getName());
                         playerScoreboard(player);
                         addBossbar(player);
                     }
@@ -92,7 +94,14 @@ public class ZombieLand {
                             updateActionBar();
                         }
                     } else {
-                        playersInGame.forEach(player -> player.sendTitle("Congratulations!", "You won the game \"ZombieLand " + name + "\"", 20, 100, 20));
+                        playersInGame.forEach(player -> {
+                            player.sendTitle("Congratulations!", "You won the game \"ZombieLand " + name + "\"", 20, 100, 20);
+                            NamespacedKey playerGameMoneyKey = new NamespacedKey(plugin, uuid + "_money");
+                            Integer playerGameMoney = player.getPersistentDataContainer().get(playerGameMoneyKey, PersistentDataType.INTEGER);
+                            assert playerGameMoney != null;
+                            playerGameMoney = (int) (playerGameMoney.doubleValue() * 1.25);
+                            player.getPersistentDataContainer().set(playerGameMoneyKey, PersistentDataType.INTEGER, playerGameMoney);
+                        });
                         stopGame();
                     }
                 }
@@ -110,6 +119,9 @@ public class ZombieLand {
         if (areaLives != null) {
             return areaLives != 0;
         } else {
+            if (playersBeenInGame.contains(player.getName())) {
+                return false;
+            }
             areaLives = playerLives;
             Location playerLoc = player.getLocation();
             if (area.locIsInArea(playerLoc)) {
@@ -205,21 +217,21 @@ public class ZombieLand {
     }
 
     public void stopGame() {
-        plugin.getServer().getOnlinePlayers().forEach(player -> {
-            playerLeaveGame(player);
-            NamespacedKey areaLivesKey = new NamespacedKey(plugin, "zlLives" + name);
-            player.getPersistentDataContainer().remove(areaLivesKey);
-        });
+        playersInGame.forEach(this::playerLeaveGame);
         uuid = UUID.randomUUID();
         pauseTimer = 0;
         timer = 0;
         level = 0;
         playersInGame.clear();
+        playersBeenInGame.clear();
         getRemainingZombies().forEach(Entity::remove);
+        removeDroppedItems();
     }
 
     public void playerLeaveGame (Player player) {
         plugin.getLogger().info(player.getName() + " left the game \"Zombie Land " + name + "\"");
+        NamespacedKey areaLivesKey = new NamespacedKey(plugin, "zlLives" + name);
+        player.getPersistentDataContainer().remove(areaLivesKey);
         removeBossbar(player);
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(""));
         player.setScoreboard(scoreboardManager.getNewScoreboard());
@@ -268,8 +280,6 @@ public class ZombieLand {
             playerTeam.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.FOR_OWN_TEAM);
             playerTeam.addPlayer(player);
             playerTeam.setDisplayName(teamName);
-            //Score score = Objects.requireNonNull(scoreboard.getObjective("zombieland" + name)).getScore(player.getName() + " kills");
-            //score.setScore(0);
             NamespacedKey playerGameMoneyKey = new NamespacedKey(plugin, uuid + "_money");
             Integer playerGameMoney = player.getPersistentDataContainer().get(playerGameMoneyKey, PersistentDataType.INTEGER);
             if (playerGameMoney == null) {
@@ -310,5 +320,10 @@ public class ZombieLand {
         BoundingBox boundingBox = new BoundingBox(area.loc1.getX(), 0.0, area.loc1.getZ(), area.loc2.getX(), 256.0, area.loc2.getZ());
         NamespacedKey gameNameKey = new NamespacedKey(plugin, "gameName");
         return Objects.requireNonNull(area.loc1.getWorld()).getNearbyEntities(boundingBox, (entity -> Objects.equals(entity.getPersistentDataContainer().get(gameNameKey, PersistentDataType.STRING), name)));
+    }
+
+    private void removeDroppedItems() {
+        BoundingBox boundingBox = new BoundingBox(area.loc1.getX(), 0.0, area.loc1.getZ(), area.loc2.getX(), 256.0, area.loc2.getZ());
+        Objects.requireNonNull(area.loc1.getWorld()).getNearbyEntities(boundingBox, (entity -> entity instanceof Item)).forEach(Entity::remove);
     }
 }
