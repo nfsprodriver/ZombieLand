@@ -6,6 +6,7 @@ import com.nfsprodriver.zombieland.functions.General;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarFlag;
@@ -14,6 +15,9 @@ import org.bukkit.boss.BossBar;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.*;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -35,6 +39,7 @@ public class ZombieLand {
     private final FileConfiguration config;
     public final Area area;
     private List<Player> playersInGame = new ArrayList<>();
+    public Map<Player, List<ItemStack>> savedInventories = new HashMap<>();
     public BossBar bossbar;
     public Scoreboard scoreboard;
     public String name;
@@ -71,6 +76,7 @@ public class ZombieLand {
             });
             if (playersInGame.size() > 0) {
                 timer++;
+                checkPlayersInventory();
                 updateActionBar();
                 if (getRemainingZombies().size() == 0) {
                     pauseTimer++;
@@ -106,6 +112,38 @@ public class ZombieLand {
             }
         }
         return false;
+    }
+
+    private void checkPlayersInventory() {
+        playersInGame.forEach(player -> {
+            PlayerInventory playerInv = player.getInventory();
+            boolean hasWeapon = false;
+            NamespacedKey gameUuidKey = new NamespacedKey(plugin, "gameUuid");
+            List<ItemStack> invStacks = savedInventories.getOrDefault(player, new ArrayList<>());
+            for (ItemStack invStack : playerInv.getContents()) {
+                if (invStack == null || invStack.getItemMeta() == null) {
+                    continue;
+                }
+                String gameUuid = invStack.getItemMeta().getPersistentDataContainer().get(gameUuidKey, PersistentDataType.STRING);
+                if (gameUuid == null || !(gameUuid.equals(uuid.toString()))) {
+                    ItemMeta meta = invStack.getItemMeta();
+                    invStacks.add(invStack);
+                    playerInv.removeItem(invStack);
+                } else if (invStack.getType().name().endsWith("_SWORD") || invStack.getType().name().endsWith("_AXE")) {
+                    hasWeapon = true;
+                }
+            }
+            savedInventories.put(player, invStacks);
+            if (!hasWeapon) {
+                ItemStack woodenSword = new ItemStack(Material.WOODEN_SWORD, 1);
+                ItemMeta swordMeta = woodenSword.getItemMeta();
+                assert swordMeta != null;
+                swordMeta.setDisplayName("Basic sword");
+                swordMeta.getPersistentDataContainer().set(gameUuidKey, PersistentDataType.STRING, uuid.toString());
+                woodenSword.setItemMeta(swordMeta);
+                playerInv.addItem(woodenSword);
+            }
+        });
     }
 
     private void updateActionBar() {
@@ -176,6 +214,7 @@ public class ZombieLand {
     }
 
     public void playerLeaveGame (Player player) {
+        plugin.getLogger().info(player.getName() + " left the game \"Zombie Land " + name + "\"");
         removeBossbar(player);
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(""));
         if (player.getScoreboard() == scoreboard) {
@@ -186,6 +225,19 @@ public class ZombieLand {
         }
         NamespacedKey playerGameMoneyKey = new NamespacedKey(plugin, uuid + "_money");
         new General(config).givePlayerEmeralds(player, playerGameMoneyKey);
+        player.getInventory().clear();
+        giveBackInventory(player);
+    }
+
+    public void giveBackInventory(Player player) {
+        List<ItemStack> invStacks = savedInventories.get(player);
+        if (invStacks != null) {
+            invStacks.forEach(invStack -> {
+                PlayerInventory playerInv = player.getInventory();
+                playerInv.addItem(invStack);
+            });
+            savedInventories.remove(player);
+        }
     }
 
     private void generateScoreboard() {

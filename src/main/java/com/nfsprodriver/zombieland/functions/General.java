@@ -29,7 +29,7 @@ public class General {
             return;
         }
         PlayerInventory playerInv = player.getInventory();
-        ItemStack itemStack = new ItemStack(Material.EMERALD, playerGameMoney);
+        ItemStack itemStack = new ItemStack(Material.EMERALD, (int) ((double)playerGameMoney / 10.0));
         playerInv.addItem(itemStack);
         player.getPersistentDataContainer().remove(dataKey);
     }
