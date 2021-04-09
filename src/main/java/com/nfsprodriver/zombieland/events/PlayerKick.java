@@ -22,7 +22,7 @@ public class PlayerKick implements Listener {
     public void onPlayerLeave(PlayerKickEvent event) {
         Player player = event.getPlayer();
         games.values().forEach(game -> {
-            game.giveBackInventory(player);
+            game.playerLeaveGame(player);
         });
     }
 }

@@ -21,9 +21,7 @@ public class ServerCommand implements Listener {
     public void onServerCommand(ServerCommandEvent event) {
         String command = event.getCommand();
         if (command.equals("stop") || command.equals("restart")) {
-            games.values().forEach(game -> {
-                game.savedInventories.keySet().forEach(game::giveBackInventory);
-            });
+            games.values().forEach(ZombieLand::stopGame);
         }
     }
 }

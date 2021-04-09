@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Zombie;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
@@ -33,15 +34,14 @@ public class ZombieKilled implements Listener {
     @EventHandler
     public void onZombieKilled(EntityDeathEvent event) {
         NamespacedKey gameNameKey = new NamespacedKey(plugin, "gameName");
-        event.getDrops().clear();
         LivingEntity entity = event.getEntity();
         String gameName = entity.getPersistentDataContainer().get(gameNameKey, PersistentDataType.STRING);
-        if (gameName != null) {
+        if (entity instanceof Zombie && gameName != null) {
+            event.getDrops().clear();
             ZombieLand game = games.get(gameName);
+            game.currentZombies.remove(entity);
             if (entity.getKiller() != null) {
                 Player player = entity.getKiller();
-                //Score score = Objects.requireNonNull(player.getScoreboard().getObjective("zombieland" + gameName)).getScore(player.getName() + " kills");
-                //score.setScore(score.getScore() + 1);
                 NamespacedKey killMoneyKey = new NamespacedKey(plugin, "killMoney");
                 Integer killMoney = entity.getPersistentDataContainer().get(killMoneyKey, PersistentDataType.INTEGER);
                 assert killMoney != null;

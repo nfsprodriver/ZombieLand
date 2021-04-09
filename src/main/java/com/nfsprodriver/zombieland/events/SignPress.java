@@ -1,6 +1,5 @@
 package com.nfsprodriver.zombieland.events;
 
-import com.nfsprodriver.zombieland.functions.General;
 import com.nfsprodriver.zombieland.game.ZombieLand;
 import org.bukkit.Location;
 import org.bukkit.Material;

@@ -40,6 +40,7 @@ public class ZombieLand {
     public final Area area;
     public List<Player> playersInGame = new ArrayList<>();
     public List<String> playersBeenInGame = new ArrayList<>();
+    public List<Zombie> currentZombies = new ArrayList<>();
     public Map<Player, List<ItemStack>> savedInventories = new HashMap<>();
     public BossBar bossbar;
     public Scoreboard scoreboard;
@@ -86,7 +87,7 @@ public class ZombieLand {
                 timer++;
                 checkPlayersInventory();
                 updateActionBar();
-                if (getRemainingZombies().size() == 0) {
+                if (currentZombies.size() == 0) {
                     pauseTimer++;
                     if (level < maxLevel) {
                         if ((pauseTimer.equals((level + 1) * 3) || pauseTimer.equals(pauseTime))) {
@@ -206,6 +207,7 @@ public class ZombieLand {
             for (int i = 0; i < count; i++) {
                 Location spawnLoc = getRandomLocation();
                 Zombie zombie = (Zombie) Objects.requireNonNull(spawnLoc.getWorld()).spawnEntity(spawnLoc, EntityType.ZOMBIE);
+                currentZombies.add(zombie);
                 CustomZombie customZombie = new CustomZombie(zombie, name, plugin);
                 try {
                     customZombie.getClass().getDeclaredMethod("create" + zombieType).invoke(customZombie);
@@ -217,18 +219,19 @@ public class ZombieLand {
     }
 
     public void stopGame() {
-        playersInGame.forEach(this::playerLeaveGame);
+        playersInGame.forEach(this::resetPlayer);
         uuid = UUID.randomUUID();
         pauseTimer = 0;
         timer = 0;
         level = 0;
         playersInGame.clear();
         playersBeenInGame.clear();
-        getRemainingZombies().forEach(Entity::remove);
+        currentZombies.forEach(Zombie::remove);
+        //getRemainingZombies().forEach(Entity::remove);
         removeDroppedItems();
     }
 
-    public void playerLeaveGame (Player player) {
+    private void resetPlayer (Player player) {
         plugin.getLogger().info(player.getName() + " left the game \"Zombie Land " + name + "\"");
         NamespacedKey areaLivesKey = new NamespacedKey(plugin, "zlLives" + name);
         player.getPersistentDataContainer().remove(areaLivesKey);
@@ -238,11 +241,15 @@ public class ZombieLand {
         Location loc1 = area.loc1.clone();
         Location spawnLoc = new General(plugin.getConfig()).goToSpawnEntry(loc1);
         player.teleport(spawnLoc);
-        playersInGame.remove(player);
         player.getInventory().clear();
         giveBackInventory(player);
         NamespacedKey playerGameMoneyKey = new NamespacedKey(plugin, uuid + "_money");
         new General(config).givePlayerEmeralds(player, playerGameMoneyKey);
+    }
+
+    public void playerLeaveGame (Player player) {
+        resetPlayer(player);
+        playersInGame.remove(player);
     }
 
     public void giveBackInventory(Player player) {
@@ -299,7 +306,7 @@ public class ZombieLand {
         if (level == 0) {
             return;
         }
-        int current = getRemainingZombies().size();
+        int current = currentZombies.size();
         bossbar.setTitle("Remaining Zombies: " + current);
         bossbar.setProgress((double)current / (double)levelTotZomb);
     }

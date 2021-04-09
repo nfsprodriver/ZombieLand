@@ -21,9 +21,7 @@ public class PlayerCommand implements Listener {
     public void onPlayerCommand(PlayerCommandPreprocessEvent event) {
         String command = event.getMessage();
         if (command.equals("/stop") || command.equals("/restart")) {
-            games.values().forEach(game -> {
-                game.savedInventories.keySet().forEach(game::giveBackInventory);
-            });
+            games.values().forEach(ZombieLand::stopGame);
         }
     }
 }

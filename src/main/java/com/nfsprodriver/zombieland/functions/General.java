@@ -9,6 +9,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.util.Map;
+import java.util.Objects;
+
 public class General {
     private final FileConfiguration config;
 
@@ -30,7 +33,10 @@ public class General {
         }
         PlayerInventory playerInv = player.getInventory();
         ItemStack itemStack = new ItemStack(Material.EMERALD, (int) ((double)playerGameMoney / 10.0));
-        playerInv.addItem(itemStack);
+        Map<Integer, ItemStack> remainingItems = playerInv.addItem(itemStack);
+        remainingItems.values().forEach(remainingItem -> {
+            Objects.requireNonNull(player.getLocation().getWorld()).dropItemNaturally(player.getLocation(), remainingItem);
+        });
         player.getPersistentDataContainer().remove(dataKey);
     }
 }
