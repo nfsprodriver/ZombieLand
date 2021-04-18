@@ -207,6 +207,7 @@ public class ZombieLand {
             for (int i = 0; i < count; i++) {
                 Location spawnLoc = getRandomLocation();
                 Zombie zombie = (Zombie) Objects.requireNonNull(spawnLoc.getWorld()).spawnEntity(spawnLoc, EntityType.ZOMBIE);
+                plugin.getLogger().info(zombie.getLocation().toString());
                 currentZombies.add(zombie);
                 CustomZombie customZombie = new CustomZombie(zombie, name, plugin);
                 try {
@@ -238,13 +239,13 @@ public class ZombieLand {
         removeBossbar(player);
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(""));
         player.setScoreboard(scoreboardManager.getNewScoreboard());
-        Location loc1 = area.loc1.clone();
-        Location spawnLoc = new General(plugin.getConfig()).goToSpawnEntry(loc1);
+        Location loc = player.getLocation();
+        Location spawnLoc = new General(plugin).goToSpawnEntry(loc);
         player.teleport(spawnLoc);
         player.getInventory().clear();
         giveBackInventory(player);
         NamespacedKey playerGameMoneyKey = new NamespacedKey(plugin, uuid + "_money");
-        new General(config).givePlayerEmeralds(player, playerGameMoneyKey);
+        new General(plugin).givePlayerEmeralds(player, playerGameMoneyKey);
     }
 
     public void playerLeaveGame (Player player) {

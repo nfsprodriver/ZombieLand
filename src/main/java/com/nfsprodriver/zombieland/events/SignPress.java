@@ -6,6 +6,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.type.WallSign;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,6 +17,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class SignPress implements Listener {
     private final JavaPlugin plugin;
@@ -31,7 +33,7 @@ public class SignPress implements Listener {
     @EventHandler
     public void onSignPress(PlayerInteractEvent event) {
         Block clickedBlock = event.getClickedBlock();
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK && clickedBlock != null && clickedBlock.getType() == Material.OAK_SIGN) {
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK && clickedBlock != null && (clickedBlock.getType() == Material.OAK_SIGN || clickedBlock.getType() == Material.OAK_WALL_SIGN)) {
             Sign sign = (Sign) clickedBlock.getState();
             NamespacedKey signTypeKey = new NamespacedKey(plugin, "signType");
             String type = sign.getPersistentDataContainer().get(signTypeKey, PersistentDataType.STRING);
@@ -45,6 +47,7 @@ public class SignPress implements Listener {
                     playerLoc.setX(config.getInt("zlareas." + area + ".entry.x"));
                     playerLoc.setY(config.getInt("zlareas." + area + ".entry.y"));
                     playerLoc.setZ(config.getInt("zlareas." + area + ".entry.z"));
+                    playerLoc.setWorld(plugin.getServer().getWorld(Objects.requireNonNull(config.getString("zlareas." + area + ".world"))));
                     player.teleport(playerLoc);
                 } else {
                     player.sendMessage("No lives left for running game, please wait for next game!");

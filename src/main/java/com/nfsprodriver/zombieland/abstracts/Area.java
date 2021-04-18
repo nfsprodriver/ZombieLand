@@ -1,6 +1,7 @@
 package com.nfsprodriver.zombieland.abstracts;
 
 import org.bukkit.Location;
+import org.bukkit.World;
 
 public class Area {
     public Location loc1;
@@ -16,6 +17,6 @@ public class Area {
     }
     
     public boolean locIsInArea(Location loc) {
-        return (loc.getX() > this.loc1.getX() && loc.getX() < this.loc2.getX() && loc.getZ() > this.loc1.getZ() && loc.getZ() < this.loc2.getZ());
+        return (loc.getX() > this.loc1.getX() && loc.getX() < this.loc2.getX() && loc.getZ() > this.loc1.getZ() && loc.getZ() < this.loc2.getZ() && this.loc1.getWorld() == loc.getWorld());
     }
 }

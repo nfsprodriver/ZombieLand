@@ -32,7 +32,7 @@ public class CreateSign implements CommandExecutor {
             if (args.length == 2) {
                 area = args[1];
             }
-            if (block != null && block.getType() == Material.OAK_SIGN) {
+            if (block != null && (block.getType() == Material.OAK_SIGN || block.getType() == Material.OAK_WALL_SIGN)) {
                 Sign sign = (Sign) block.getState();
                 NamespacedKey signTypeKey = new NamespacedKey(plugin, "signType");
                 sign.getPersistentDataContainer().set(signTypeKey, PersistentDataType.STRING, type);

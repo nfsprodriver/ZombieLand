@@ -29,19 +29,19 @@ public class WorldLoaded implements Listener {
     @EventHandler
     public void onWorldLoaded(WorldLoadEvent event) {
         World world = event.getWorld();
-        if (world.getName().equals("world")) {
-            Location spawnLoc = world.getSpawnLocation();
-            ConfigurationSection zlareas = config.getConfigurationSection("zlareas");
-            assert zlareas != null;
-            Set<String> zlareasKeys = zlareas.getKeys(false);
-            zlareasKeys.forEach(zlareasKey -> {
-                ConfigurationSection zlarea = zlareas.getConfigurationSection(zlareasKey);
-                assert zlarea != null;
+        Location spawnLoc = world.getSpawnLocation();
+        ConfigurationSection zlareas = config.getConfigurationSection("zlareas");
+        assert zlareas != null;
+        Set<String> zlareasKeys = zlareas.getKeys(false);
+        zlareasKeys.forEach(zlareasKey -> {
+            ConfigurationSection zlarea = zlareas.getConfigurationSection(zlareasKey);
+            assert zlarea != null;
+            if (world.getName().equals(zlarea.getString("world"))) {
                 Area area = new Area(spawnLoc, zlarea.getDouble("x1"), zlarea.getDouble("x2"), zlarea.getDouble("z1"), zlarea.getDouble("z2"));
                 ZombieLand game = new ZombieLand(plugin, area, Bukkit.getScheduler(), zlareasKey);
                 games.put(zlareasKey, game);
                 game.init();
-            });
-        }
+            }
+        });
     }
 }

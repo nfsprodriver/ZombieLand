@@ -29,7 +29,7 @@ public class PlayerJoin implements Listener {
             if (dataKey.getKey().endsWith("_money")) {
                 String uuid = dataKey.getKey().split("_")[0];
                 if (games.values().stream().noneMatch(game -> game.uuid.toString().equals(uuid))) {
-                    new General(plugin.getConfig()).givePlayerEmeralds(player, dataKey);
+                    new General(plugin).givePlayerEmeralds(player, dataKey);
                 }
             }
         });
