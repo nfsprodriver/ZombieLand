@@ -39,3 +39,13 @@ teams:
   green: green
   blue: blue
   yellow: yellow
+
+zombies:
+  Zombie1:
+    isBaby: false
+    helmet: IRON_HELMET
+    mainHand: IRON_SWORD
+    drops:
+      BREAD:
+        amount: 3
+        prob: 0.3

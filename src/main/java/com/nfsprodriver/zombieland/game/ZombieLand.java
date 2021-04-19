@@ -213,11 +213,12 @@ public class ZombieLand {
                 plugin.getLogger().info(zombie.getLocation().toString());
                 currentZombies.add(zombie);
                 CustomZombie customZombie = new CustomZombie(zombie, name, plugin);
-                try {
+                customZombie.createCustomZombie(zombieType);
+                /*try {
                     customZombie.getClass().getDeclaredMethod("create" + zombieType).invoke(customZombie);
                 } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                     e.printStackTrace();
-                }
+                }*/
             }
         });
     }
