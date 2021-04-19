@@ -19,6 +19,7 @@ public class Main extends JavaPlugin {
         saveDefaultConfig();
         //WorldLoaded MUST be first one
         getServer().getPluginManager().registerEvents(new WorldLoaded(this, games), this);
+        getServer().getPluginManager().registerEvents(new ChunkLoad(this, games), this);
         getServer().getPluginManager().registerEvents(new ServerCommand(this, games), this);
         getServer().getPluginManager().registerEvents(new PlayerCommand(this, games), this);
         getServer().getPluginManager().registerEvents(new PlayerJoin(this, games), this);

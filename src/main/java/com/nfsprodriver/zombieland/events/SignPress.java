@@ -37,10 +37,9 @@ public class SignPress implements Listener {
             Sign sign = (Sign) clickedBlock.getState();
             NamespacedKey signTypeKey = new NamespacedKey(plugin, "signType");
             String type = sign.getPersistentDataContainer().get(signTypeKey, PersistentDataType.STRING);
-            assert type != null;
             Player player = event.getPlayer();
             Location playerLoc = player.getLocation();
-            if (type.equals("zl")) {
+            if (type != null && type.equals("zl")) {
                 NamespacedKey zlAreaKey = new NamespacedKey(plugin, "zlArea");
                 String area = sign.getPersistentDataContainer().get(zlAreaKey, PersistentDataType.STRING);
                 if (enterGame(player, area)) {

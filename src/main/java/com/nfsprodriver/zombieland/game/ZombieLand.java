@@ -8,6 +8,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.block.Sign;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarFlag;
 import org.bukkit.boss.BarStyle;
@@ -41,6 +42,7 @@ public class ZombieLand {
     public List<Player> playersInGame = new ArrayList<>();
     public List<String> playersBeenInGame = new ArrayList<>();
     public List<Zombie> currentZombies = new ArrayList<>();
+    public List<Sign> connectedSigns = new ArrayList<>();
     public Map<Player, List<ItemStack>> savedInventories = new HashMap<>();
     public BossBar bossbar;
     public Scoreboard scoreboard;
@@ -69,6 +71,7 @@ public class ZombieLand {
         generateBossbar();
         scheduler.runTaskTimer(plugin, () -> {
             updateBossbar();
+            updateSigns();
             plugin.getServer().getOnlinePlayers().forEach(player -> {
                 if (playerIsInGame(player)) {
                     if (!(playersInGame.contains(player))) {
@@ -322,6 +325,14 @@ public class ZombieLand {
         if (bossbar.getPlayers().contains(player)) {
             bossbar.removePlayer(player);
         }
+    }
+
+    private void updateSigns() {
+        connectedSigns.forEach(connectedSign -> {
+            int playersCount = playersInGame.size();
+            connectedSign.setLine(1, "Players: " + playersCount);
+            connectedSign.update();
+        });
     }
 
     private Collection<Entity> getRemainingZombies() {
