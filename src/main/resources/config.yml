@@ -42,6 +42,7 @@ teams:
 
 zombies:
   Zombie1:
+    money: 10
     isBaby: false
     helmet: IRON_HELMET
     mainHand: IRON_SWORD

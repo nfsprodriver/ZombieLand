@@ -1,5 +1,6 @@
 package com.nfsprodriver.zombieland.events;
 
+import com.nfsprodriver.zombieland.functions.General;
 import com.nfsprodriver.zombieland.game.ZombieLand;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -30,19 +31,6 @@ public class ChunkLoad implements Listener {
     @EventHandler
     public void onChunkLoad(ChunkLoadEvent event) {
         Chunk chunk = event.getChunk();
-        Stream<BlockState> blockStates = Arrays.stream(chunk.getTileEntities()).filter(blockState -> (blockState.getBlock().getType() == Material.OAK_SIGN || blockState.getBlock().getType() == Material.OAK_WALL_SIGN));
-        blockStates.forEach(blockState -> {
-            Sign sign = (Sign) blockState;
-            NamespacedKey signTypeKey = new NamespacedKey(plugin, "signType");
-            String type = sign.getPersistentDataContainer().get(signTypeKey, PersistentDataType.STRING);
-            if (type != null && type.equals("zl")) {
-                NamespacedKey zlAreaKey = new NamespacedKey(plugin, "zlArea");
-                String area = sign.getPersistentDataContainer().get(zlAreaKey, PersistentDataType.STRING);
-                ZombieLand game = games.get(area);
-                if(!game.connectedSigns.contains(sign)) {
-                    game.connectedSigns.add(sign);
-                }
-            }
-        });
+        new General(plugin).chunkSigns(games, chunk);
     }
 }

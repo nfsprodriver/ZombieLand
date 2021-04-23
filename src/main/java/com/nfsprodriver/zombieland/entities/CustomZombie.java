@@ -60,6 +60,7 @@ public class CustomZombie {
         zombie.setBaby(zombieConfig.getBoolean("isBaby"));
         EntityEquipment equipment = zombie.getEquipment();
         assert equipment != null;
+
         if (zombieConfig.getString("helmet") != null) {
             ItemStack helmet = new ItemStack(Objects.requireNonNull(Material.getMaterial(Objects.requireNonNull(zombieConfig.getString("helmet")))));
             equipment.setHelmet(helmet);

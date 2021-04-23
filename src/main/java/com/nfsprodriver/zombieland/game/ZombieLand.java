@@ -128,10 +128,10 @@ public class ZombieLand {
             }
             areaLives = playerLives;
             Location playerLoc = player.getLocation();
-            if (area.locIsInArea(playerLoc)) {
+            /*if (area.locIsInArea(playerLoc)) {
                 player.getPersistentDataContainer().set(areaLivesKey, PersistentDataType.INTEGER, areaLives);
                 return true;
-            }
+            }*/
         }
         return false;
     }

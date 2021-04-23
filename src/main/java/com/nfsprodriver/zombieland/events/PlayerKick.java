@@ -19,10 +19,12 @@ public class PlayerKick implements Listener {
     }
 
     @EventHandler
-    public void onPlayerLeave(PlayerKickEvent event) {
+    public void onPlayerKick(PlayerKickEvent event) {
         Player player = event.getPlayer();
         games.values().forEach(game -> {
-            game.playerLeaveGame(player);
+            if (game.playersInGame.contains(player)) {
+                game.playerLeaveGame(player);
+            }
         });
     }
 }
