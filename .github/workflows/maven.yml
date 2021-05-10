@@ -20,11 +20,9 @@ jobs:
         distribution: 'adopt'
     - name: Build with Maven
       run: mvn package
-    - name: LS
-      run: ls -Ral
     - name: Archive production artifacts
       uses: actions/upload-artifact@v2
       with:
         name: target
         path: |
-          target
+          target/*.jar
