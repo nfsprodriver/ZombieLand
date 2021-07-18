@@ -1,7 +1,6 @@
 package com.nfsprodriver.zombieland.abstracts;
 
 import org.bukkit.Location;
-import org.bukkit.World;
 
 public class Area {
     public Location loc1;
